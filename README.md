@@ -1,6 +1,6 @@
 # AuthTables
 
-AuthTables is a service that assists in the detects when an authentication may have been taken over because of credential theft. If people are stealing your users passwords, AuthTables may be useful.
+AuthTables is a service that prevents (or detects) "Account Taken Over" cause by simple credential theft. If people are stealing your users passwords, AuthTables may be useful.
 
 AuthTables requires zero integration with external feeds of data, risk scores, or machine learning to be useful, though they can certainly be used. Your own authentication data will generate a graph of known locations for a user as they authenticate with known cookies or IP address. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new locations for the user.
 
@@ -38,3 +38,5 @@ AuthTables quickly responds whether this is a known location for the user. If ei
 ## Limitations
 
 - Extra Paranoid users who frequently change hosts and clear cookies (VPN's and Incognito) will frequently appear as credential thiefs
+- Authentications from users victimized by malware require very different approaches, as they will have access to their local machine identification and network
+- AuthTables cannot dictate how you will challenge a user who appears suspicious, but methods outside of true MFA may have their own vulnerabilities. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm themselves as a real user.
