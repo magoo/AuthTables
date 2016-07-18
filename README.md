@@ -1,5 +1,6 @@
 # AuthTables
 [![Build Status](https://travis-ci.com/magoo/AuthTables.svg?token=fpqWnUyRzpaumK7xop3q&branch=master)](https://travis-ci.com/magoo/AuthTables)
+
 AuthTables is a service that prevents (or detects) "Account Taken Over" caused by simple credential theft. If bad actors are stealing your users passwords, AuthTables may be useful.
 
 AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known locations for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new locations for the user, reducing their friction and increasing their security.
