@@ -1,0 +1,16 @@
+#!/bin/bash
+
+while true; do
+RAND=$RANDOM+$RANDOM
+
+#New user (random uid)
+curl --data "{\"ip\":\"1.1.1.1\",\"mid\":\"KNOWNCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
+curl --data "{\"ip\":\"1.1.1.2\",\"mid\":\"KNOWNCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
+curl --data "{\"ip\":\"1.1.1.1\",\"mid\":\"NEWCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
+curl --data "{\"ip\":\"1.1.1.3\",\"mid\":\"NEWCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
+curl --data "{\"ip\":\"1.1.1.3\",\"mid\":\"NEWNEWCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
+
+#New user (Suspicious)
+curl --data "{\"ip\":\"4.1.1.3\",\"mid\":\"EVILCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
+
+done
