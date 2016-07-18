@@ -31,7 +31,7 @@ AuthTables assumes that your authentication service assigns as-static-as-possibl
 
 This allows less friction to the user and greatly reduces the need to prompt for MFA or other out-of-band-verifications. It also strongly identifies that a user is compromised by a more localized attack, or ATO of their registration email, allowing for much easier support scenarios to mitigate the user.
 
-## Detections
+## Detection
 It's entirely possible to limit AuthTables to only logging duty with no interference or interaction with your users. Implement custom alerting on your logs and can discover IP addresses or machine identifiers that are frequently appearing as suspicious logins which may surface high scale ATO driven attacks on your application.
 
 ## Protocol
