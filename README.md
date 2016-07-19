@@ -38,7 +38,7 @@ If fraud *does occur* after your systems have challenged the user, you can logic
 ## Opportunity
 The attack limitations of simple credential thief creates an opportunity for us to build an ever growing graph of known locations a user authenticates from. A credential thief is limited to operating outside of this graph, thus allowing us to treat those authentication with suspicion.
 
-[image](graph.png)
+![image](graph.png)
 
 You application may have methods to add locations to this graph, for example:
 
