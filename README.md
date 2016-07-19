@@ -5,6 +5,8 @@ AuthTables is a service that prevents (or detects) "Account Take Over" (ATO) cau
 
 AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known location records for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new record for the user, reducing their friction and increasing their security.
 
+AuthTables relies on an in memory [bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) allowing extremely fast responses while storing historical user location records to redis for backups and fraud investigations.
+
 ## Threat
 
 AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical records, unless they are a totally different type of threat altogether.
@@ -74,10 +76,10 @@ AuthTables quickly responds whether this is a known record for the user. If eith
 
 ## Limitations
 
-- Extra Paranoid users who frequently change hosts and clear cookies (VPN's and Incognito) will frequently appear as credential thiefs
-- Authentications from users victimized by malware require very different approaches, as they will have access to their local machine identification and network
-- AuthTables cannot dictate how you will challenge a user who appears suspicious, but methods outside of true MFA may have their own vulnerabilities. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm themselves as a real user.
-- Localized, personal account takeover, like "Friendly Fraud". These sorts of attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
+- Extra Paranoid users who frequently change hosts and clear cookies (VPN's and Incognito) will frequently appear as credential thiefs. A VPN switch alone or an incognito browser alone will not appear suspicious, but we cannot `OK` a complete change of appearance (both).
+- Authentications from users victimized by malware require very different approaches, as the adversary will have access to their local machine identification and network, bypassing AuthTables detection.
+- AuthTables encourages you to challenge users who appears suspicious. However, methods outside of true MFA may have their own bypasses. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm a new record for themselves.
+- Localized, personal account takeover, like "Friendly Fraud", bypasses AuthTables. Localize, personal attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
 
 ## Running With Docker
 
@@ -91,6 +93,7 @@ docker-compose up
 ```
 
 ## Testing in BASH
+There are bash scripts in `/scripts` for various testing as well.
 ```bash
 function post {
   curl localhost:8080/check \
