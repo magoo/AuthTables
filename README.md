@@ -1,20 +1,44 @@
 # AuthTables
 [![Build Status](https://travis-ci.com/magoo/AuthTables.svg?token=fpqWnUyRzpaumK7xop3q&branch=master)](https://travis-ci.com/magoo/AuthTables)
 
-AuthTables is a service that prevents (or detects) "Account Taken Over" caused by simple credential theft. If bad actors are stealing your users passwords, AuthTables may be useful.
+AuthTables is a service that prevents (or detects) "Account Take Over" caused by simple credential theft. If bad actors are stealing your users passwords, AuthTables may be useful.
 
 AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known locations for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new locations for the user, reducing their friction and increasing their security.
 
 ## Threat
 
-AuthTables is solely focused on the most common credential theft use case. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical locations, unless they are a totally different type of threat altogether.
+AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical locations, unless they are a totally different type of threat altogether.
 
 This the most common and most accessible threat that results from large credential dumps and shared passwords.
 
-By being so simple and accessible, simple credential theft and ATO generally makes up for far more than half of the abuse issues related to ATO, while the constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies. The former is fairly simple to defend against with AuthTables, allowing support and engineering attention to be paid to more complicated attacks.
+<pre>
+┌──────────────────────────────┐ ┌──────────┐
+│                              │ │ Malware  │
+│                              │ └──────────┘
+│                              │ ┌──────────┐
+│                              │ │   XSS    │
+│                              │ └──────────┘
+│                              │ ┌──────────┐
+│   Trivial Credential Reuse   │ │   MITM   │
+│                              │ └──────────┘
+│                              │ ┌──────────┐
+│                              │ │  Theft   │
+│                              │ └──────────┘
+│                              │ ┌──────────┐
+│                              │ │ PW Reset │
+└──────────────────────────────┘ └──────────┘
+</pre>
+
+By being so simple and accessible, simple credential theft and ATO generally makes up for far more than half of the abuse issues related to ATO, while the constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies.
+
+AuthTables focuses solely on this largest problem, and logically reduces the possibility that an authentication is ATO'd by making it clear that the auth came from a known device or location that a trivial attacker couldn't possibly have used.
+
+If fraud *does occur* after your systems have challenged the user, you can logically conclude that the user has suffered a much more significant compromise than a trivial credential theft.
 
 ## Opportunity
 The attack limitations of simple credential thief creates an opportunity for us to build an ever growing graph of known locations a user authenticates from. A credential thief is limited to operating outside of this graph, thus allowing us to treat those authentication with suspicion.
+
+[image](graph.png)
 
 You application may have methods to add locations to this graph, for example:
 
