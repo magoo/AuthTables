@@ -9,10 +9,15 @@ import (
       "gopkg.in/redis.v4"
       "os"
       "time"
+      "flag"
     )
 
+//Bloom Filter
 var n uint = 1000
 var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
+
+//Command Line Flags
+var ip = flag.String("conf", "conf.json", "path to config file")
 
 //Main data structure for users. Every request we receive is a Record
 type Record struct {
@@ -51,7 +56,7 @@ var client = redis.NewClient(&redis.Options{
 
 //Main
 func main() {
-
+  flag.Parse()
   //First time online, gotta heat up
 
   loadRecords()
@@ -237,7 +242,7 @@ func loadRecords() {
 func readConfig() (c Configuration) {
 
   //May need to come from CLI, built in for now
-  file, _ := os.Open("conf.json")
+  file, _ := os.Open("./conf.json")
   decoder := json.NewDecoder(file)
   configuration := Configuration{}
   err := decoder.Decode(&configuration)
