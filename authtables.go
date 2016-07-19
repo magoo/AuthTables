@@ -42,7 +42,6 @@ var client = redis.NewClient(&redis.Options{
 //Main
 func main() {
 
-
   //First time online, load historical data for bloom
   loadRecords()
 
