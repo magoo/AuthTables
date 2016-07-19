@@ -40,7 +40,7 @@ The attack limitations of simple credential thief creates an opportunity for us 
 
 ![image](graph.png)
 
-You application may have methods to add locations to this graph, for example:
+Your application may have methods to add locations to this graph, for example:
 
 - Email registrations or link clicks
 - Multifactor authentications
@@ -48,7 +48,7 @@ You application may have methods to add locations to this graph, for example:
 - Manual intervention from customer support
 - Older logins that have never been abusive
 
-These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph.
+These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified locations to `/add`.
 
 Additional verifications entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a location, whereas a social website may `/add` a location to the users graph if they've clicked on a link in their email.
 
