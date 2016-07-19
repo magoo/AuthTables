@@ -1,9 +1,8 @@
 authtables:
   build: .
-  ports:
+  ports: 
    - "8080:8080"
-  links:
+  links: 
    - redis
-  env_file: .env
 redis:
   image: redis

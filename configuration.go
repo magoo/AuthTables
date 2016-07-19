@@ -1,9 +1,10 @@
 package main
 
 import (
+      "fmt"
+      "encoding/json"
       "os"
       "flag"
-      "fmt"
     )
 
 
@@ -18,29 +19,18 @@ type Configuration struct {
 var c Configuration = readConfig()
 
 func readConfig() (c Configuration) {
-  fmt.Println("Reading config!")
-  //Command Line Flags
-  var flag_host string
-  flag.StringVar(&flag_host, "host", os.Getenv("AUTHTABLES_HOST"), "hostname for redis")
-  var flag_port string
-  flag.StringVar(&flag_port, "port", os.Getenv("AUTHTABLES_PORT"), "port for redis")
-  var flag_pw string
-  flag.StringVar(&flag_pw, "password", os.Getenv("AUTHTABLES_PW"), "password for redis")
   flag.Parse()
+  //Command Line Flags
+  var config_file string
+  flag.StringVar(&config_file, "conf", "./conf.json", "path to config file")
 
-  fmt.Println("Reading config: " + flag_host + flag_port + flag_pw)
-  //We're going to load this with config data. See struct!
+  //May need to come from CLI, built in for now
+  file, _ := os.Open(config_file)
+  decoder := json.NewDecoder(file)
   configuration := Configuration{}
-
-  //command line flag is blank, use ENV instead
-
-  configuration.Host = os.Getenv("AUTHTABLES_HOST")
-  configuration.Port = os.Getenv("AUTHTABLES_PORT")
-  configuration.Password = os.Getenv("AUTHTABLES_PW")
-
-  //configuration.Host = flag_host
-  //configuration.Port = flag_port
-  //configuration.Password = flag_pw
-
+  err := decoder.Decode(&configuration)
+  if err != nil {
+    fmt.Println("error:", err)
+  }
   return configuration
 }

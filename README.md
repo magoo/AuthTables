@@ -110,6 +110,3 @@ function post {
 \# post "2.2.2.2" "ID-C"
 > BAD
 ```
-
-## Configuration
-Configuration is done within .env or the host's environment variables. See https://docs.docker.com/compose/env-file/
