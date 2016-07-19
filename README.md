@@ -102,12 +102,12 @@ function post {
     }"
 }
 # Bash: First Authentication (automatically added)
-\# post "1.1.1.1" "ID-A"
+$ post "1.1.1.1" "ID-A"
 > OK
 # Second Post (Good, because 1.1.1.1 is already known. We add "ID-B".
-\# post "1.1.1.1" "ID-B"
+$ post "1.1.1.1" "ID-B"
 > OK
 # Brand New Post (Bad, neither have been seen before, outside our graph of good)
-\# post "2.2.2.2" "ID-C"
+$ post "2.2.2.2" "ID-C"
 > BAD
 ```
