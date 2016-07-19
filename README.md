@@ -52,3 +52,4 @@ AuthTables quickly responds whether this is a known location for the user. If ei
 - Extra Paranoid users who frequently change hosts and clear cookies (VPN's and Incognito) will frequently appear as credential thiefs
 - Authentications from users victimized by malware require very different approaches, as they will have access to their local machine identification and network
 - AuthTables cannot dictate how you will challenge a user who appears suspicious, but methods outside of true MFA may have their own vulnerabilities. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm themselves as a real user.
+- Localized, personal account takeover, like "Friendly Fraud". These sorts of attacks may share a laptop or wifi, both of which would bypass protections from AuthTables. 
