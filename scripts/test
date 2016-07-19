@@ -16,6 +16,11 @@ curl --data '{"ip":"12.12.13.13","mid":"BADCOOKIE","uid":"magoo"}' localhost:808
 curl --data '{"ip":"78.8.2.4","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
 curl --data '{"ip":"13.4.5.6","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
 
+#Add it (maybe they 2fac'd)
+curl --data '{"ip":"13.4.5.6","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/add -H "Content-Type: application/json"
+#And should be OK again
+curl --data '{"ip":"13.4.5.6","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
+
 #New user (random uid)
 curl --data "{\"ip\":\"1.1.1.1\",\"mid\":\"KNOWNCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
 curl --data "{\"ip\":\"1.1.1.2\",\"mid\":\"KNOWNCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"

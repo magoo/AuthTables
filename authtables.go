@@ -111,12 +111,11 @@ func check(rec Record, w http.ResponseWriter){
 }
 
 func add(rec Record, w http.ResponseWriter) {
-  rh := getRecordHashesFromRecord(rec)
 
-  filter.Add(rh.uid)
-  filter.Add(rh.uid_ip)
-  filter.Add(rh.uid_mid)
-  filter.Add(rh.uid_all)
+  //JSON record is sent to /add, we add all of it to bloom.
+  rh := getRecordHashesFromRecord(rec)
+  writeUserRecord(rh)
+  fmt.Fprintln(w, "ADD")
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
