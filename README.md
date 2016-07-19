@@ -3,11 +3,11 @@
 
 AuthTables is a service that prevents (or detects) "Account Take Over" (ATO) caused by simple credential theft. If bad actors are stealing your users passwords, AuthTables may be useful.
 
-AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known locations for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new locations for the user, reducing their friction and increasing their security.
+AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known location records for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new record for the user, reducing their friction and increasing their security.
 
 ## Threat
 
-AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical locations, unless they are a totally different type of threat altogether.
+AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical records, unless they are a totally different type of threat altogether.
 
 This the most common and most accessible threat that results from large credential dumps and shared passwords.
 
@@ -31,26 +31,27 @@ This the most common and most accessible threat that results from large credenti
 
 By being so simple and accessible, simple credential theft and ATO generally makes up for far more than half of the abuse issues related to ATO, while the constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies.
 
-AuthTables focuses solely on this largest problem, and logically reduces the possibility that an authentication is ATO'd by making it clear that the auth came from a known device or location that a trivial attacker couldn't possibly have used.
+AuthTables focuses solely on this largest problem, and logically reduces the possibility that an authentication is ATO'd by making it clear that the auth came from a known device or record that a trivial attacker couldn't possibly have used.
 
 If fraud *does occur* after your systems have challenged the user, you can logically conclude that the user has suffered a much more significant compromise than a trivial credential theft.
 
 ## Opportunity
-The attack limitations of simple credential thief creates an opportunity for us to build an ever growing graph of known locations a user authenticates from. A credential thief is limited to operating outside of this graph, thus allowing us to treat those authentication with suspicion.
+The attack limitations of simple credential thief creates an opportunity for us to build an ever growing graph of known records a user authenticates from. A credential thief is limited to operating outside of this graph, thus allowing us to treat those authentication with suspicion.
 
 ![image](graph.png)
 
-Your application may have methods to add locations to this graph, for example:
+Your application may have methods to verify these suspicious records and `/add` them the user's graph:
 
-- Email registrations or link clicks
+- Verification over email
+- Out of band SMS
 - Multifactor authentications
-- Other risk-based signals based on ML
+- Threat feeds (known proxies, Tor, known data center, etc)
 - Manual intervention from customer support
 - Older logins that have never been abusive
 
-These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified locations to `/add`.
+These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified record to `/add`.
 
-Additional verifications are entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a location, whereas a social website may `/add` a location to the users graph if they've clicked on a link in their email.
+Additional verifications are entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a record, whereas a social website may `/add` a record to the users graph if they've clicked on a link in their email.
 
 AuthTables assumes that your authentication service assigns as-static-as-possible cookies or identifiers to your users clients, as their personal devices will reveal new IP addresses they are likely to authenticate from.
 
@@ -69,7 +70,7 @@ AuthTables receives JSON POSTs  to `/check` containing UID, IP, and Machine ID.
   "uid":"magoo"
   }`
 
-AuthTables quickly responds whether this is a known location for the user. If either MID or IP is new, it will add this to their known locations (Response: "OK") which grows their graph. If both are new, there is significant possibility that this account is taken over (Response: "BAD"), and should trigger a multifactor or email confirmation or other way of mitigating risk of ATO for this session. After this challenge, you can `/add` the session to their graph, allowing them to operate in the future without challenges.
+AuthTables quickly responds whether this is a known record for the user. If either MID or IP is new, it will add this to their known record (Response: "OK") which grows their graph. If both are new, there is significant possibility that this account is taken over (Response: "BAD"), and should trigger a multifactor or email confirmation or other way of mitigating risk of ATO for this session. After this challenge, you can `/add` the session to their graph, allowing them to operate in the future without challenges.
 
 ## Limitations
 
