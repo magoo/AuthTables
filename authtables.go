@@ -57,9 +57,10 @@ var client = redis.NewClient(&redis.Options{
 //Main
 func main() {
   flag.Parse()
-  //First time online, gotta heat up
 
+  //First time online, load historical data for bloom
   loadRecords()
+
   //Announce that we're running
   fmt.Printf("AuthTables is running.\n")
   //Open a webserver
@@ -219,7 +220,7 @@ func loadRecords() {
         keys, cursor, err = client.Scan(cursor, "", 10).Result()
         if err != nil {
 
-            fmt.Println("Could not connect to Database. Error! Starting from scratch")
+            fmt.Println("Could not connect to Database. Error! Continuing without history.")
             break;
             //panic(err)
         }
@@ -236,7 +237,7 @@ func loadRecords() {
         }
     }
 
-    fmt.Printf("found %d keys\n", n)
+    fmt.Printf("Loaded %d historical records.\n", n)
 }
 
 func readConfig() (c Configuration) {

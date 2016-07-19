@@ -50,11 +50,11 @@ Your application may have methods to add locations to this graph, for example:
 
 These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified locations to `/add`.
 
-Additional verifications entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a location, whereas a social website may `/add` a location to the users graph if they've clicked on a link in their email.
+Additional verifications are entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a location, whereas a social website may `/add` a location to the users graph if they've clicked on a link in their email.
 
-AuthTables assumes that your authentication service assigns as-static-as-possible cookies or identifiers to your users clients, as it uses this to learn new IP addresses your users connect from.
+AuthTables assumes that your authentication service assigns as-static-as-possible cookies or identifiers to your users clients, as their personal devices will reveal new IP addresses they are likely to authenticate from.
 
-This allows less friction to the user and greatly reduces the need to prompt for MFA or other out-of-band-verifications. It also strongly identifies that a user is compromised by a more localized attack, or ATO of their registration email, allowing for much easier support scenarios to mitigate the user.
+This allows less friction to the user and greatly reduces the need to prompt for MFA or other out-of-band-verifications. It also strongly identifies when a user is compromised by a more powerful, localized attack, or ATO of their registration email, allowing for much easier support scenarios to mitigate the user once you've eliminated trivial credential reuse.
 
 ## Detection
 It's entirely possible to limit AuthTables to only logging duty with no interference or interaction with your users. Implement custom alerting on your logs and can discover IP addresses or machine identifiers that are frequently appearing as suspicious logins which may surface high scale ATO driven attacks on your application.
@@ -85,7 +85,12 @@ AuthTables quickly responds whether this is a known location for the user. If ei
 docker-compose build
 # run with a local redis
 docker-compose up
-# Send a test post request
+# Bash function: Send a test post request
+
+```
+
+## Testing in BASH
+```bash
 function post {
   curl localhost:8080/check \
    -H "Content-Type: application/json" \
@@ -95,13 +100,13 @@ function post {
       \"uid\":\"magoo\"
     }"
 }
-# First Post
-post "1.1.1.1" "ID-A"
-> GOOD
-# Second Post (Good)
-post "1.1.1.1" "ID-B"
-> GOOD
-# Brad New Post (Bad)
-post "2.2.2.2" "ID-C"
+# Bash: First Authentication (automatically added)
+\# post "1.1.1.1" "ID-A"
+> OK
+# Second Post (Good, because 1.1.1.1 is already known. We add "ID-B".
+\# post "1.1.1.1" "ID-B"
+> OK
+# Brand New Post (Bad, neither have been seen before, outside our graph of good)
+\# post "2.2.2.2" "ID-C"
 > BAD
 ```
