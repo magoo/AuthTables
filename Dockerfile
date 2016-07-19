@@ -11,9 +11,10 @@ RUN go get github.com/willf/bloom \
 # Add our files
 ADD authtables.go authtables.go
 ADD conf.json conf.json
+ADD configuration.go configuration.go
 
 # Build app
-RUN go build authtables.go
+RUN go build authtables.go configuration.go
 
 # Default runs on 8080
 EXPOSE 8080

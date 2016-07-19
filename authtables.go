@@ -7,17 +7,12 @@ import (
       "encoding/json"
       "io/ioutil"
       "gopkg.in/redis.v4"
-      "os"
       "time"
-      "flag"
     )
 
 //Bloom Filter
 var n uint = 1000
 var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
-
-//Command Line Flags
-var ip = flag.String("conf", "conf.json", "path to config file")
 
 //Main data structure for users. Every request we receive is a Record
 type Record struct {
@@ -36,16 +31,6 @@ type RecordHashes struct {
   mid_ip  []byte
 }
 
-//JSON Config Struct
-type Configuration struct {
-  Host      string
-  Port      string
-  Password  string
-}
-
-//Global access to configuration variables
-var c Configuration = readConfig()
-
 //Take us online to Redis
 var client = redis.NewClient(&redis.Options{
     Addr:     c.Host + ":" + c.Port,
@@ -56,7 +41,7 @@ var client = redis.NewClient(&redis.Options{
 
 //Main
 func main() {
-  flag.Parse()
+
 
   //First time online, load historical data for bloom
   loadRecords()
@@ -240,18 +225,7 @@ func loadRecords() {
     fmt.Printf("Loaded %d historical records.\n", n)
 }
 
-func readConfig() (c Configuration) {
 
-  //May need to come from CLI, built in for now
-  file, _ := os.Open("./conf.json")
-  decoder := json.NewDecoder(file)
-  configuration := Configuration{}
-  err := decoder.Decode(&configuration)
-  if err != nil {
-    fmt.Println("error:", err)
-  }
-  return configuration
-}
 
 func writeUserRecord(rh RecordHashes) {
 
