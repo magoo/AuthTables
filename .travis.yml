@@ -3,3 +3,7 @@ go:
   - tip
 services:
   - redis-server
+after_success:
+  - ./scripts/test
+  on:
+    branch: development
