@@ -193,6 +193,8 @@ func loadRecords() {
     fmt.Printf("Loaded %d historical records.\n", n)
 }
 
+
+
 func writeUserRecord(rh RecordHashes) {
 
   err := client.MSetNX(string(rh.uid), 1, string(rh.uid_mid), 1, string(rh.uid_ip), 1, string(rh.uid_ip), 1, string(rh.uid_all), 1).Err()

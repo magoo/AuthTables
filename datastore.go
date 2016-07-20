@@ -1,11 +1,14 @@
 package main
 
 import (
-      "gopkg.in/redis.v4"
       "github.com/willf/bloom"
+      "gopkg.in/redis.v4"
     )
 
-//Main data structure for users. Every request we receive is a Record
+//Bloom Filter
+var n uint = 1000
+var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
+
 type Record struct {
   UID string `json:"uid"`
   IP string `json:"ip"`
@@ -28,7 +31,3 @@ var client = redis.NewClient(&redis.Options{
     Password: c.Password, // no password set
     DB:       0,  // use default DB
 })
-
-//Bloom Filter
-var n uint = 1000
-var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
