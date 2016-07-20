@@ -12,9 +12,10 @@ RUN go get github.com/willf/bloom \
 ADD authtables.go authtables.go
 ADD .env .env
 ADD configuration.go configuration.go
+ADD datastore.go datastore.go
 
 # Build app
-RUN go build authtables.go configuration.go
+RUN go build authtables.go configuration.go datastore.go
 
 # Default runs on 8080
 EXPOSE 8080
