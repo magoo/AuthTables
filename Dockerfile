@@ -9,13 +9,12 @@ RUN go get github.com/willf/bloom \
            gopkg.in/redis.v4
 
 # Add our files
-ADD main.go main.go
+ADD authtables.go authtables.go
 ADD .env .env
 ADD configuration.go configuration.go
-ADD datastore.go datastore.go
 
 # Build app
-RUN go build authtables.go configuration.go datastore.go
+RUN go build authtables.go configuration.go
 
 # Default runs on 8080
 EXPOSE 8080
