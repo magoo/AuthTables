@@ -15,7 +15,7 @@ AuthTables relies on an in memory [bloom filter](https://en.wikipedia.org/wiki/B
 
 AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical records, unless they are a localized account takeover threat (malware, etc)
 
-This the most common and most accessible threat that results from large credential dumps and shared passwords.
+Remote credential reuse is the most common and most accessible threat that results from large credential dumps and shared passwords.
 
 ![](visual.png)
 
