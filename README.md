@@ -19,11 +19,11 @@ This the most common and most accessible threat that results from large credenti
 
 ![](visual.png)
 
-By being so simple and accessible, simple credential theft and ATO generally makes up for far more than half of the abuse issues related to ATO, while the constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies.
+Far more than half of the abuse issues related to ATO are remote credential reuse due to its ease of exploitation. The constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies, and are not in scope of AuthTables.
 
 AuthTables focuses solely on this largest problem, and logically reduces the possibility that an authentication is ATO'd by making it clear that the auth came from a known device or record that a remote attacker couldn't possibly have used.
 
-If fraud *does occur* after your systems have challenged the user, you can logically conclude that the user has suffered a much more significant compromise than a remote credential theft.
+If fraud *does occur* after your systems have challenged a `BAD` user, you can logically conclude that the user has suffered a much more significant compromise than a remote credential theft.
 
 ## Opportunity
 The attack limitations of simple credential thief creates an opportunity for us to build an ever growing graph of known records a user authenticates from. A credential thief is limited to operating outside of this graph, thus allowing us to treat those authentication with suspicion.
@@ -39,7 +39,7 @@ Your application may have methods to verify these suspicious records and `/add` 
 - Manual intervention from customer support
 - Older logins that have never been abusive
 
-These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified record to `/add`.
+These are example verifications that remote credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified record to `/add`.
 
 Additional verifications are entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a record, whereas a social website may `/add` a record to the users graph if they've clicked on a link in their email.
 
