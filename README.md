@@ -65,9 +65,9 @@ AuthTables quickly responds whether this is a known record for the user. If eith
 ## Limitations
 
 - Extra Paranoid users who frequently change hosts and clear cookies (VPN's and Incognito) will frequently appear as credential thiefs. A VPN switch alone or an incognito browser alone will not appear suspicious, but we cannot `OK` a complete change of appearance (both).
-- Authentications from users victimized by malware require very different approaches, as the adversary will have access to their local machine identification and network, bypassing AuthTables detection.
-- AuthTables encourages you to challenge users who appears suspicious. However, methods outside of true MFA may have their own bypasses. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm a new record for themselves.
-- Localized, personal account takeover, like "Friendly Fraud", bypasses AuthTables. Localize, personal attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
+- Authentications from users victimized by localized attacks (like malware, see "Threats") require very different approaches, as the adversary will have access to their local machine identification and network, bypassing AuthTables detection.
+- AuthTables depends on your application to challenge users who appears suspicious, and `ADD`ing their location after verification. However, methods outside of true MFA may have their own bypasses. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm a new record for themselves.
+- In-Person account takeover, like "Friendly Fraud" or the "Malicious Family Member" bypasses AuthTables. Localized, personal attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
 
 ## Running With Docker
 
