@@ -90,26 +90,17 @@ func add(rec Record, w http.ResponseWriter) {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 
-	//DEBUG: Output whatever the client sends us
-	//fmt.Fprintf(w, "Request landed: %s\n", r.URL.Path[1:])
-
-	//Get data from request
-	//Manually testing requests:
-	//`curl --data '{"ip":"1.5.5.123","mid":"ABCDEFGH","uid":"12345"}' localhost:8080/check -H "Content-Type: application/json"`
-
+	//Get our body from the request (which should be JSON)
 	r.ParseForm()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 
-	//debug: check the string sent from the client
-	//fmt.Println(body)
+	//Cast our JSON body content to prepare for Unmarshal
 	client_authdata := []byte(body)
 
-	//This should be JSON with IP and ID
-	//var client_authdata = []byte(`{"uid": "22000040", "ip": "1.1.1.1", "mid": "ASDFQWER"}`)
-	//Decode some JSON
+	//Decode some JSON and get it into our Record struct
 	var m Record
 	err = json.Unmarshal(client_authdata, &m)
 	if err != nil {
@@ -130,9 +121,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	//DEBUG
-	//fmt.Printf("Received: %s %s %s %+v\n", rec.UID, rec.MID, rec.IP, m )
-
 }
 
 func writeRecord(key []byte) {
@@ -143,13 +131,8 @@ func writeRecord(key []byte) {
 		rebuildConnection()
 		fmt.Println("Record not written. Attempting to reconnect...")
 		fmt.Println(err)
-		//panic(err)
 	}
 
-	//Debug: ping if successful
-	//pong, err := client.Ping().Result()
-	//fmt.Println(pong, err)
-	// Output: PONG <nil>
 }
 
 func rebuildConnection() {
@@ -174,13 +157,10 @@ func loadRecords() {
 
 			fmt.Println("Could not connect to Database. Error! Continuing without history.")
 			break
-			//panic(err)
 		}
 		n += len(keys)
 
 		for _, element := range keys {
-			//DEBUG: Show records
-			//fmt.Printf("Loading %s\n", element)
 			filter.Add([]byte(element))
 		}
 
@@ -199,7 +179,6 @@ func writeUserRecord(rh RecordHashes) {
 		//(TODO Try to make new connection)
 		fmt.Println("MSetNX failed")
 		fmt.Println(err)
-		//panic(err)
 	}
 
 	//Bloom
