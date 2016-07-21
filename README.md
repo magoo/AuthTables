@@ -9,6 +9,8 @@ After a successful authentication attempt, AuthTables can very simply respond to
 
 AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known location records for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new record for the user, reducing their friction and increasing their security.
 
+Read more about this strategy [here](https://medium.com/starting-up-security/preventing-account-takeover-c914fa07fb45#.pm66h84hi).
+
 AuthTables relies on an in memory [bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) allowing extremely fast responses while storing historical user location records to redis for backups and fraud investigations.
 
 ## Threat
