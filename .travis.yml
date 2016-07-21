@@ -2,7 +2,6 @@ language: go
 go:
   - tip
 services:
-  - redis-server
   - docker
 after_success:
   - docker-compose build
