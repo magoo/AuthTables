@@ -15,7 +15,7 @@ AuthTables is solely focused on the most common credential theft and reuse vecto
 
 This the most common and most accessible threat that results from large credential dumps and shared passwords.
 
-![visual](visual.png)
+![visual](visual.png =472x220)
 
 By being so simple and accessible, simple credential theft and ATO generally makes up for far more than half of the abuse issues related to ATO, while the constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies.
 
