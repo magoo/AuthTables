@@ -2,34 +2,34 @@
 
 RAND=$RANDOM
 
+function post {
+  RESULT=$(curl localhost:8080/check \
+   -s \
+   -H "Content-Type: application/json" \
+   -XPOST -d \
+   "{ \"ip\":\"$1\",
+      \"mid\":\"$2\",
+      \"uid\":\"$RAND\"
+    }")
 
-#Single User Known (Will add if DB empty)
-curl --data '{"ip":"1.1.1.1","mid":"KNOWNCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
-curl --data '{"ip":"1.1.1.2","mid":"KNOWNCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
-curl --data '{"ip":"1.1.1.1","mid":"NEWCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
-curl --data '{"ip":"1.1.1.2","mid":"NEWCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
+  if [ "$RESULT" == "$3" ]
+    then echo "Passed."
+  else
+    echo "Failed."
+    exit 1
+  fi
 
+}
 
-#Suspicious!
-curl --data '{"ip":"66.66.66.66","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
-curl --data '{"ip":"12.12.13.13","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
-curl --data '{"ip":"78.8.2.4","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
-curl --data '{"ip":"13.4.5.6","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
+#Brand new user. Begin their graph.
+post "1.1.1.1" "COOKIEONE" "OK"
+#Login with new computers in the same house
+post "1.1.1.1" "COOKIETWO" "OK"
+post "1.1.1.1" "COOKIETHREE" "OK"
+post "1.1.1.1" "COOKIEFOUR" "OK"
 
-#Add it (maybe they 2fac'd)
-curl --data '{"ip":"13.4.5.6","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/add -H "Content-Type: application/json"
-#And should be OK again
-curl --data '{"ip":"13.4.5.6","mid":"BADCOOKIE","uid":"magoo"}' localhost:8080/check -H "Content-Type: application/json"
+#Login from work with laptop
+post "2.2.2.2" "COOKIETWO" "OK"
 
-#New user (random uid)
-curl --data "{\"ip\":\"1.1.1.1\",\"mid\":\"KNOWNCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
-curl --data "{\"ip\":\"1.1.1.2\",\"mid\":\"KNOWNCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
-curl --data "{\"ip\":\"1.1.1.1\",\"mid\":\"NEWCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
-curl --data "{\"ip\":\"1.1.1.3\",\"mid\":\"NEWCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
-curl --data "{\"ip\":\"1.1.1.3\",\"mid\":\"NEWNEWCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
-
-#New user (Suspicious)
-curl --data "{\"ip\":\"4.1.1.3\",\"mid\":\"EVILCOOKIE\",\"uid\":\"${RAND}\"}" localhost:8080/check -H "Content-Type: application/json"
-
-
-
+#Suspicious Login!
+post "4.4.4.4" "BADCOOKIE" "BAD"
