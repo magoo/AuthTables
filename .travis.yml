@@ -3,5 +3,8 @@ go:
   - tip
 services:
   - redis-server
+  - docker
 after_success:
+  - docker-compose build
+  - docker-compose up
   - ./scripts/test
