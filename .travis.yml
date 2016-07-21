@@ -4,7 +4,8 @@ go:
 services:
   - redis-server
   - docker
-after_success:
+install:
   - docker-compose build
+after_success:
   - docker-compose up
   - ./scripts/test
