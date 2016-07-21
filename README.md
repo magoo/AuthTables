@@ -1,9 +1,11 @@
 # AuthTables
 [![Build Status](https://travis-ci.com/magoo/AuthTables.svg?token=fpqWnUyRzpaumK7xop3q&branch=master)](https://travis-ci.com/magoo/AuthTables)
 
-AuthTables is a service that prevents (or detects) remote "Account Take Over" (ATO) caused by simple credential theft. If bad actors are stealing your users passwords, AuthTables may be useful.
+AuthTables is a service that detects the possibility of "Account Take Over" (ATO) caused by remote credential theft and reuse. If bad actors are stealing your users passwords, AuthTables may be useful.
 
 After a successful authentication attempt, AuthTables can very simply respond to your app with `BAD` if it hasn't seen the user on the IP or device identifier before. You can then challenge the user with MFA, an email confirmation, or other verification. If it has seen the user, it will respond with `OK` and you have greater assurance that the user hasn't been compromised by a basic ATO (See "Threat")
+
+![](authgraph.png)
 
 AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known location records for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new record for the user, reducing their friction and increasing their security.
 
