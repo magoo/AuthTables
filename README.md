@@ -100,4 +100,3 @@ You could build your application to do the following with `BAD` logins:
 - Disable sensitive features until MFA or email verification occurs, like a BTC withdraw.
 - Do a `count(IP)` across all of your suspicious logins and surface high volume bad actors
 - Ask other open sessions if the new `BAD` session is ok
-- 
