@@ -78,29 +78,17 @@ AuthTables quickly responds whether this is a known record for the user. If eith
 docker-compose build
 # run with a local redis
 docker-compose up
-# Bash function: Send a test post request
-
-```
-
-## Testing in BASH
-There are bash scripts in `/scripts` for various testing as well.
-```bash
-function post {
-  curl localhost:8080/check \
-   -H "Content-Type: application/json" \
-   -XPOST -d \
-   "{ \"ip\":\"$1\",
-      \"mid\":\"$2\",
-      \"uid\":\"magoo\"
-    }"
-}
-# Bash: First Authentication (automatically added)
-$ post "1.1.1.1" "ID-A"
+# send a test command (assumes docker is bound to localhost)
+curl localhost:8080/check \
+ -H "Content-Type: application/json" \
+ -XPOST -d \
+ '{ "ip":"1.1.1.1","mid":"my-device","uid":"magoo"}'
 > OK
-# Second Post (Good, because 1.1.1.1 is already known. We add "ID-B".
-$ post "1.1.1.1" "ID-B"
-> OK
-# Brand New Post (Bad, neither have been seen before, outside our graph of good)
-$ post "2.2.2.2" "ID-C"
+curl localhost:8080/check \
+ -H "Content-Type: application/json" \
+ -XPOST -d \
+ '{ "ip":"2.2.2.2","mid":"bad-device","uid":"magoo"}'
 > BAD
 ```
+
+See more examples in `/scripts` for local testing.
