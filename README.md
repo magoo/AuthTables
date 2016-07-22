@@ -92,3 +92,12 @@ curl localhost:8080/check \
 ```
 
 See more examples in `/scripts` for local testing.
+
+## Potential Implementations
+You could build your application to do the following with `BAD` logins:
+- Hook up a Slack bot to notify employees that a totally new IP / Device logged into their account.
+- Force an IP that is frequently authenticating as `BAD` to solve CAPTCHA's.
+- Disable sensitive features until MFA or email verification occurs, like a BTC withdraw.
+- Do a `count(IP)` across all of your suspicious logins and surface high volume bad actors
+- Ask other open sessions if the new `BAD` session is ok
+- 
