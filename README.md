@@ -72,6 +72,7 @@ AuthTables quickly responds whether this is a known record for the user. If eith
 - In-Person account takeover, like "Friendly Fraud" or the "Malicious Family Member" bypasses AuthTables. Localized, personal attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
 
 ## Running With Docker
+Install docker / compose: https://docs.docker.com/compose/install/
 
 ```bash
 # build the container
