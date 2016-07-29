@@ -61,18 +61,18 @@ func check(rec Record)(b bool) {
 		fmt.Println("Known user information.")
 
 		//Write Everything.
-		writeUserRecord(rh)
+		defer writeUserRecord(rh)
 		return true
 	} else if (filter.Test(rh.uid_mid)) || (filter.Test(rh.uid_ip)) {
 
 		fmt.Printf("Either %s or %s is known. Adding both.\n", rec.IP, rec.MID )
-		writeUserRecord(rh)
+		defer writeUserRecord(rh)
 		return true
 
 	} else if !(filter.Test(rh.uid)) {
 
 		fmt.Println("New user with no records. Adding records.")
-		writeUserRecord(rh)
+		defer writeUserRecord(rh)
 		return true
 
 	} else {
