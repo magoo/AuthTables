@@ -2,7 +2,7 @@
 
 RAND=$RANDOM
 
-function post {
+function check {
   RESULT=$(curl localhost:8080/check \
    -s \
    -H "Content-Type: application/json" \
@@ -12,24 +12,52 @@ function post {
       \"uid\":\"$RAND\"
     }")
 
-  if [ "$RESULT" == "$3" ]
-    then echo "Passed."
-  else
+  if [ "$RESULT" != "$3" ]; then
     echo "Failed."
     exit 1
   fi
 
 }
 
+function add {
+  RESULT=$(curl localhost:8080/add \
+   -s \
+   -H "Content-Type: application/json" \
+   -XPOST -d \
+   "{ \"ip\":\"$1\",
+      \"mid\":\"$2\",
+      \"uid\":\"$RAND\"
+    }")
+
+  if [ "$RESULT" != "$3" ]; then
+    echo "Failed."
+    exit 1
+  fi
+}
+
 #Brand new user. Begin their graph.
-post "1.1.1.1" "COOKIEONE" "OK"
+check "1.1.1.1" "COOKIEONE" "OK"
 #Login with new computers in the same house
-post "1.1.1.1" "COOKIETWO" "OK"
-post "1.1.1.1" "COOKIETHREE" "OK"
-post "1.1.1.1" "COOKIEFOUR" "OK"
+check "1.1.1.1" "COOKIETWO" "OK"
+check "1.1.1.1" "COOKIETHREE" "OK"
+check "1.1.1.1" "COOKIEFOUR" "OK"
+
+add "5.5.5.5" "NEWCOOKIE" "ADD"
 
 #Login from work with laptop
-post "2.2.2.2" "COOKIETWO" "OK"
+check "2.2.2.2" "COOKIETWO" "OK"
 
 #Suspicious Login!
-post "4.4.4.4" "BADCOOKIE" "BAD"
+check "4.4.4.4" "BADCOOKIE" "BAD"
+
+#Bad Data!
+check "<script>alert(null)>" "BADCOOKIE" "BAD"
+check "2.2.2.2" "'<&2$;:" "BAD"
+
+#Add that previously suspicious login
+add "4.4.4.4" "BADCOOKIE" "ADD"
+
+#Not so suspicious now, is it?
+check "4.4.4.4" "BADCOOKIE" "OK"
+
+echo "All tests have passed."
