@@ -16,7 +16,7 @@ func main() {
 	loadRecords()
 
 	//Announce that we're running
-	fmt.Printf("AuthTables is running.\n")
+	fmt.Println("AuthTables is running.")
 	//Add routes, then open a webserver
 	http.HandleFunc("/add", addRequest)
 	http.HandleFunc("/check", checkRequest)
@@ -28,11 +28,11 @@ func getRecordHashesFromRecord(rec Record) (recordhashes RecordHashes) {
 
 	rh := RecordHashes{
 		uid:     []byte(rec.UID),
-		uid_mid: []byte(rec.UID + ":" + rec.MID),
-		uid_ip:  []byte(rec.UID + ":" + rec.IP),
-		uid_all: []byte(rec.UID + ":" + rec.IP + ":" + rec.MID),
-		ip_mid:  []byte(rec.IP + ":" + rec.MID),
-		mid_ip:  []byte(rec.MID + ":" + rec.IP),
+		uid_mid: []byte(fmt.Sprintf("%s:%s",rec.UID,rec.MID)),
+		uid_ip:  []byte(fmt.Sprintf("%s:%s",rec.UID,rec.IP)),
+		uid_all: []byte(fmt.Sprintf("%s:%s:%s",rec.UID,rec.IP,rec.MID)),
+		ip_mid:  []byte(fmt.Sprintf("%s:%s",rec.IP,rec.MID)),
+		mid_ip:  []byte(fmt.Sprintf("%s:%s",rec.MID,rec.IP)),
 	}
 
 	return rh
@@ -58,26 +58,26 @@ func check(rec Record)(b bool) {
 	//if filter.Test([]byte(r.URL.Path[1:])) {
 	if filter.Test(rh.uid_all) {
 		//We've seen everything about this user before. MachineID, IP, and user.
-		fmt.Printf("Known user information.\n")
+		fmt.Println("Known user information.")
 
 		//Write Everything.
 		writeUserRecord(rh)
 		return true
 	} else if (filter.Test(rh.uid_mid)) || (filter.Test(rh.uid_ip)) {
 
-		fmt.Printf("Either " + rec.IP + " or " + rec.MID + " is known. Adding both.\n")
+		fmt.Printf("Either %s or %s is known. Adding both.\n", rec.IP, rec.MID )
 		writeUserRecord(rh)
 		return true
 
 	} else if !(filter.Test(rh.uid)) {
 
-		fmt.Printf("New user with no records. Adding records.\n")
+		fmt.Println("New user with no records. Adding records.")
 		writeUserRecord(rh)
 		return true
 
 	} else {
 
-		fmt.Printf("IP: " + rec.IP + " and MID: " + rec.MID + " are suspicious.\n")
+		fmt.Printf("IP: %s and MID: %s are suspicious.\n", rec.IP, rec.MID)
 		return false
 	}
 
@@ -204,5 +204,5 @@ func writeUserRecord(rh RecordHashes) {
 
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	fmt.Println(name + " took " + elapsed.String())
+	fmt.Printf("%s took %s\n",name, elapsed.String())
 }
