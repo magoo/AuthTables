@@ -16,9 +16,10 @@ func main() {
 	loadRecords()
 
 	//Announce that we're running
-	fmt.Printf("AuthTables is running.\n")
-	//Open a webserver
-	http.HandleFunc("/", handler)
+	fmt.Println("AuthTables is running.")
+	//Add routes, then open a webserver
+	http.HandleFunc("/add", addRequest)
+	http.HandleFunc("/check", checkRequest)
 	http.ListenAndServe(":8080", nil)
 
 }
@@ -27,17 +28,17 @@ func getRecordHashesFromRecord(rec Record) (recordhashes RecordHashes) {
 
 	rh := RecordHashes{
 		uid:     []byte(rec.UID),
-		uid_mid: []byte(rec.UID + ":" + rec.MID),
-		uid_ip:  []byte(rec.UID + ":" + rec.IP),
-		uid_all: []byte(rec.UID + ":" + rec.IP + ":" + rec.MID),
-		ip_mid:  []byte(rec.IP + ":" + rec.MID),
-		mid_ip:  []byte(rec.MID + ":" + rec.IP),
+		uid_mid: []byte(fmt.Sprintf("%s:%s",rec.UID,rec.MID)),
+		uid_ip:  []byte(fmt.Sprintf("%s:%s",rec.UID,rec.IP)),
+		uid_all: []byte(fmt.Sprintf("%s:%s:%s",rec.UID,rec.IP,rec.MID)),
+		ip_mid:  []byte(fmt.Sprintf("%s:%s",rec.IP,rec.MID)),
+		mid_ip:  []byte(fmt.Sprintf("%s:%s",rec.MID,rec.IP)),
 	}
 
 	return rh
 }
 
-func check(rec Record, w http.ResponseWriter) {
+func check(rec Record)(b bool) {
 	//We've received a request to /check and now
 	//we need to see if it's suspicious or not.
 
@@ -57,39 +58,40 @@ func check(rec Record, w http.ResponseWriter) {
 	//if filter.Test([]byte(r.URL.Path[1:])) {
 	if filter.Test(rh.uid_all) {
 		//We've seen everything about this user before. MachineID, IP, and user.
-		fmt.Printf("Known user information.\n")
-		fmt.Fprintln(w, "OK")
+		fmt.Println("Known user information.")
+
 		//Write Everything.
 		writeUserRecord(rh)
-
+		return true
 	} else if (filter.Test(rh.uid_mid)) || (filter.Test(rh.uid_ip)) {
 
-		fmt.Printf("Either " + rec.IP + " or " + rec.MID + " is known. Adding both.\n")
-		fmt.Fprintln(w, "OK")
+		fmt.Printf("Either %s or %s is known. Adding both.\n", rec.IP, rec.MID )
 		writeUserRecord(rh)
+		return true
 
 	} else if !(filter.Test(rh.uid)) {
-		fmt.Printf("New user with no records. Adding records.\n")
-		writeUserRecord(rh)
 
-		fmt.Fprintln(w, "OK")
+		fmt.Println("New user with no records. Adding records.")
+		writeUserRecord(rh)
+		return true
+
 	} else {
-		fmt.Printf("IP: " + rec.IP + " and MID: " + rec.MID + " are suspicious.\n")
-		fmt.Fprintln(w, "BAD")
+
+		fmt.Printf("IP: %s and MID: %s are suspicious.\n", rec.IP, rec.MID)
+		return false
 	}
 
 }
 
-func add(rec Record, w http.ResponseWriter) {
+func add(rec Record) (b bool) {
 
 	//JSON record is sent to /add, we add all of it to bloom.
 	rh := getRecordHashesFromRecord(rec)
 	writeUserRecord(rh)
-	fmt.Fprintln(w, "ADD")
+	return true
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-
+func requestToJson (r *http.Request) (m Record) {
 	//Get our body from the request (which should be JSON)
 	r.ParseForm()
 	body, err := ioutil.ReadAll(r.Body)
@@ -101,26 +103,38 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	client_authdata := []byte(body)
 
 	//Decode some JSON and get it into our Record struct
-	var m Record
-	err = json.Unmarshal(client_authdata, &m)
+	var rec Record
+	err = json.Unmarshal(client_authdata, &rec)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 
-	//Which Route?
-	route := r.URL.Path[1:]
+	return rec
+}
 
-	if route == "check" {
-		fmt.Printf("Checking %s: ", m.UID)
-		check(m, w)
-	} else if route == "add" {
-		fmt.Println("Adding: ", m)
-		add(m, w)
+//Main routing handlers
+func addRequest(w http.ResponseWriter, r *http.Request) {
+	var m Record
+	m = requestToJson(r)
+	fmt.Println("Adding: ", m)
+
+	if (add(m)) {
+		fmt.Fprintln(w, "ADD")
 	} else {
-		fmt.Println("Bad Request.")
+			fmt.Fprintln(w, "ADD")
+	}//Currently we fail open.
+}
 
+func checkRequest(w http.ResponseWriter, r *http.Request) {
+	var m Record
+	m = requestToJson(r)
+	fmt.Printf("Checking %s: ", m.UID)
+
+	if (check(m)) {
+		fmt.Fprintln(w, "OK")
+	} else {
+		fmt.Fprintln(w, "BAD")
 	}
-
 }
 
 func writeRecord(key []byte) {
@@ -190,5 +204,5 @@ func writeUserRecord(rh RecordHashes) {
 
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	fmt.Println(name + " took " + elapsed.String())
+	fmt.Printf("%s took %s\n",name, elapsed.String())
 }

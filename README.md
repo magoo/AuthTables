@@ -1,11 +1,15 @@
 # AuthTables
 [![Build Status](https://travis-ci.com/magoo/AuthTables.svg?token=fpqWnUyRzpaumK7xop3q&branch=master)](https://travis-ci.com/magoo/AuthTables)
 
-AuthTables is a service that prevents (or detects) remote "Account Take Over" (ATO) caused by simple credential theft. If bad actors are stealing your users passwords, AuthTables may be useful.
+AuthTables is a service that detects the possibility of "Account Take Over" (ATO) caused by remote credential theft and reuse. If bad actors are stealing your users passwords, AuthTables may be useful.
 
 After a successful authentication attempt, AuthTables can very simply respond to your app with `BAD` if it hasn't seen the user on the IP or device identifier before. You can then challenge the user with MFA, an email confirmation, or other verification. If it has seen the user, it will respond with `OK` and you have greater assurance that the user hasn't been compromised by a basic ATO (See "Threat")
 
+![](authgraph.png)
+
 AuthTables depends on no external feeds of data, risk scores, or machine learning. Your own authentication data will generate a graph of known location records for a user as they authenticate with known cookies or IP addresses. Every new login from a previously known IP or Cookie makes this graph stronger over time as it adds new record for the user, reducing their friction and increasing their security.
+
+Read more about this strategy [here](https://medium.com/starting-up-security/preventing-account-takeover-c914fa07fb45#.pm66h84hi).
 
 AuthTables relies on an in memory [bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) allowing extremely fast responses while storing historical user location records to redis for backups and fraud investigations.
 
@@ -13,15 +17,15 @@ AuthTables relies on an in memory [bloom filter](https://en.wikipedia.org/wiki/B
 
 AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical records, unless they are a localized account takeover threat (malware, etc)
 
-This the most common and most accessible threat that results from large credential dumps and shared passwords.
+Remote credential reuse is the most common and most accessible threat that results from large credential dumps and shared passwords.
 
-![visual](visual.png)
+![](visual.png)
 
-By being so simple and accessible, simple credential theft and ATO generally makes up for far more than half of the abuse issues related to ATO, while the constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies.
+Far more than half of the abuse issues related to ATO are remote credential reuse due to its ease of exploitation. The constellation of other problems (local malware, malicious browser extensions, MITM) usually make up the rest at most companies, and are not in scope of AuthTables.
 
 AuthTables focuses solely on this largest problem, and logically reduces the possibility that an authentication is ATO'd by making it clear that the auth came from a known device or record that a remote attacker couldn't possibly have used.
 
-If fraud *does occur* after your systems have challenged the user, you can logically conclude that the user has suffered a much more significant compromise than a remote credential theft.
+If fraud *does occur* after your systems have challenged a `BAD` user, you can logically conclude that the user has suffered a much more significant compromise than a remote credential theft.
 
 ## Opportunity
 The attack limitations of simple credential thief creates an opportunity for us to build an ever growing graph of known records a user authenticates from. A credential thief is limited to operating outside of this graph, thus allowing us to treat those authentication with suspicion.
@@ -37,7 +41,7 @@ Your application may have methods to verify these suspicious records and `/add` 
 - Manual intervention from customer support
 - Older logins that have never been abusive
 
-These are example verifications that simple credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified record to `/add`.
+These are example verifications that remote credential thieves will have significant hurdles or friction to manipulate, allowing you to increase the size of your users known graph. You'll do this by sending verified record to `/add`.
 
 Additional verifications are entirely dependent on your own risk tolerance. A bitcoin company, for instance, may require true MFA to add a record, whereas a social website may `/add` a record to the users graph if they've clicked on a link in their email.
 
@@ -63,40 +67,37 @@ AuthTables quickly responds whether this is a known record for the user. If eith
 ## Limitations
 
 - Extra Paranoid users who frequently change hosts and clear cookies (VPN's and Incognito) will frequently appear as credential thiefs. A VPN switch alone or an incognito browser alone will not appear suspicious, but we cannot `OK` a complete change of appearance (both).
-- Authentications from users victimized by malware require very different approaches, as the adversary will have access to their local machine identification and network, bypassing AuthTables detection.
-- AuthTables encourages you to challenge users who appears suspicious. However, methods outside of true MFA may have their own bypasses. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm a new record for themselves.
-- Localized, personal account takeover, like "Friendly Fraud", bypasses AuthTables. Localize, personal attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
+- Authentications from users victimized by localized attacks (like malware, see "Threats") require very different approaches, as the adversary will have access to their local machine identification and network, bypassing AuthTables detection.
+- AuthTables depends on your application to challenge users who appears suspicious, and `ADD`ing their location after verification. However, methods outside of true MFA may have their own bypasses. For instance, email confirmation may suffer from a shared password with the original victim, allowing an attacker to confirm a new record for themselves.
+- In-Person account takeover, like "Friendly Fraud" or the "Malicious Family Member" bypasses AuthTables. Localized, personal attacks may share a laptop or wifi, both of which would bypass protections from AuthTables.
 
 ## Running With Docker
+Install docker / compose: https://docs.docker.com/compose/install/
 
 ```bash
 # build the container
 docker-compose build
 # run with a local redis
 docker-compose up
-# Bash function: Send a test post request
-
-```
-
-## Testing in BASH
-There are bash scripts in `/scripts` for various testing as well.
-```bash
-function post {
-  curl localhost:8080/check \
-   -H "Content-Type: application/json" \
-   -XPOST -d \
-   "{ \"ip\":\"$1\",
-      \"mid\":\"$2\",
-      \"uid\":\"magoo\"
-    }"
-}
-# Bash: First Authentication (automatically added)
-$ post "1.1.1.1" "ID-A"
+# send a test command (assumes docker is bound to localhost)
+curl localhost:8080/check \
+ -H "Content-Type: application/json" \
+ -XPOST -d \
+ '{ "ip":"1.1.1.1","mid":"my-device","uid":"magoo"}'
 > OK
-# Second Post (Good, because 1.1.1.1 is already known. We add "ID-B".
-$ post "1.1.1.1" "ID-B"
-> OK
-# Brand New Post (Bad, neither have been seen before, outside our graph of good)
-$ post "2.2.2.2" "ID-C"
+curl localhost:8080/check \
+ -H "Content-Type: application/json" \
+ -XPOST -d \
+ '{ "ip":"2.2.2.2","mid":"bad-device","uid":"magoo"}'
 > BAD
 ```
+
+See more examples in `/scripts` for local testing.
+
+## Potential Implementations
+You could build your application to do the following with `BAD` logins:
+- Hook up a Slack bot to notify employees that a totally new IP / Device logged into their account.
+- Force an IP that is frequently authenticating as `BAD` to solve CAPTCHA's.
+- Disable sensitive features until MFA or email verification occurs, like a BTC withdraw.
+- Do a `count(IP)` across all of your suspicious logins and surface high volume bad actors
+- Ask other open sessions if the new `BAD` session is ok
