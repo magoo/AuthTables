@@ -11,7 +11,6 @@ import (
 	"regexp"
 )
 
-
 //Main
 func main() {
 
@@ -129,7 +128,7 @@ func isRecordSane(r Record)(b bool){
 
 }
 func sanitizeError(){
-	fmt.Println("Bad data received. Sanitize fields in application before sending to remove this message.")
+	log.Warn("Bad data received. Sanitize fields in application before sending to remove this message.")
 }
 
 func requestToJson (r *http.Request) (m Record) {
@@ -160,7 +159,11 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 	m = requestToJson(r)
 
 	if (isRecordSane(m)){
-		fmt.Println("Adding: ", m)
+		log.WithFields(log.Fields{
+		"UID": m.UID,
+		"MID": m.MID,
+		"IP": m.IP,
+		}).Debug("Adding user.")
 
 		if (add(m)) {
 			fmt.Fprintln(w, "ADD")
@@ -179,7 +182,6 @@ func checkRequest(w http.ResponseWriter, r *http.Request) {
 
 	//Only let sane data through the gate.
 	if (isRecordSane(m)) {
-		fmt.Printf("Checking %s: ", m.UID)
 
 		if (check(m)) {
 			fmt.Fprintln(w, "OK")
