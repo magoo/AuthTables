@@ -6,7 +6,8 @@ WORKDIR /opt/authtables
 
 # install deps
 RUN go get github.com/willf/bloom \
-           gopkg.in/redis.v4
+           gopkg.in/redis.v4 \
+           github.com/Sirupsen/logrus
 
 # Add our files
 ADD authtables.go authtables.go

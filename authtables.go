@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	log "github.com/Sirupsen/logrus"
 )
+
 
 //Main
 func main() {
@@ -15,8 +17,10 @@ func main() {
 	//First time online, load historical data for bloom
 	loadRecords()
 
+	//Configure log Loglevel
+
 	//Announce that we're running
-	fmt.Println("AuthTables is running.")
+	log.Info("AuthTables is running.")
 	//Add routes, then open a webserver
 	http.HandleFunc("/add", addRequest)
 	http.HandleFunc("/check", checkRequest)
@@ -58,26 +62,43 @@ func check(rec Record)(b bool) {
 	//if filter.Test([]byte(r.URL.Path[1:])) {
 	if filter.Test(rh.uid_all) {
 		//We've seen everything about this user before. MachineID, IP, and user.
-		fmt.Println("Known user information.")
+		log.WithFields(log.Fields{
+		"UID": rec.UID,
+		"MID": rec.MID,
+		"IP": rec.IP,
+  	}).Debug("Known user information.")
 
 		//Write Everything.
 		defer writeUserRecord(rh)
 		return true
 	} else if (filter.Test(rh.uid_mid)) || (filter.Test(rh.uid_ip)) {
 
-		fmt.Printf("Either %s or %s is known. Adding both.\n", rec.IP, rec.MID )
+		log.WithFields(log.Fields{
+		"UID": rec.UID,
+		"MID": rec.MID,
+		"IP": rec.IP,
+		}).Debug("Authentication is partially within graph. Expanding graph.")
 		defer writeUserRecord(rh)
 		return true
 
 	} else if !(filter.Test(rh.uid)) {
 
-		fmt.Println("New user with no records. Adding records.")
+		log.WithFields(log.Fields{
+		"UID": rec.UID,
+		"MID": rec.MID,
+		"IP": rec.IP,
+		}).Debug("New user. Creating graph")
+
 		defer writeUserRecord(rh)
 		return true
 
 	} else {
 
-		fmt.Printf("IP: %s and MID: %s are suspicious.\n", rec.IP, rec.MID)
+		log.WithFields(log.Fields{
+		"UID": rec.UID,
+		"MID": rec.MID,
+		"IP": rec.IP,
+		}).Info("Suspicious authentication.")
 		return false
 	}
 
@@ -97,6 +118,7 @@ func requestToJson (r *http.Request) (m Record) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("error:", err)
+		log.Warn("Trouble reading JSON from request",)
 	}
 
 	//Cast our JSON body content to prepare for Unmarshal
@@ -106,7 +128,7 @@ func requestToJson (r *http.Request) (m Record) {
 	var rec Record
 	err = json.Unmarshal(client_authdata, &rec)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Warn("Trouble with Unmarhal of JSON received from client.",)
 	}
 
 	return rec
@@ -116,7 +138,6 @@ func requestToJson (r *http.Request) (m Record) {
 func addRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
 	m = requestToJson(r)
-	fmt.Println("Adding: ", m)
 
 	if (add(m)) {
 		fmt.Fprintln(w, "ADD")
@@ -128,7 +149,6 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 func checkRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
 	m = requestToJson(r)
-	fmt.Printf("Checking %s: ", m.UID)
 
 	if (check(m)) {
 		fmt.Fprintln(w, "OK")
@@ -143,14 +163,17 @@ func writeRecord(key []byte) {
 	if err != nil {
 		//(TODO Try to make new connection)
 		rebuildConnection()
-		fmt.Println("Record not written. Attempting to reconnect...")
-		fmt.Println(err)
+
+		log.WithFields(log.Fields{
+		"error": err,
+  	}).Error("Problem connecting to database.")
+
 	}
 
 }
 
 func rebuildConnection() {
-	fmt.Println("Attempting to reconnect...")
+	log.Debug("Attempting to reconnect...")
 	client = redis.NewClient(&redis.Options{
 		Addr:     c.Host + ":" + c.Port,
 		Password: c.Password, // no password set
@@ -169,7 +192,7 @@ func loadRecords() {
 		keys, cursor, err = client.Scan(cursor, "", 10).Result()
 		if err != nil {
 
-			fmt.Println("Could not connect to Database. Error! Continuing without history.")
+			log.Error("Could not connect to database. Continuing without records")
 			break
 		}
 		n += len(keys)
@@ -182,8 +205,9 @@ func loadRecords() {
 			break
 		}
 	}
-
-	fmt.Printf("Loaded %d historical records.\n", n)
+  log.WithFields(log.Fields{
+  	"number": n,
+	}).Debug("Loaded historical records.")
 }
 
 func writeUserRecord(rh RecordHashes) {
@@ -204,5 +228,18 @@ func writeUserRecord(rh RecordHashes) {
 
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	fmt.Printf("%s took %s\n",name, elapsed.String())
+	log.WithFields(log.Fields{
+		"time": elapsed.String(),
+		"event": name,
+	}).Debug("Time tracked")
+}
+
+
+//Only using init to configure logging. See configuration.go
+func init() {
+	level, err:= log.ParseLevel(c.Loglevel)
+	if err != nil {
+		log.Error("Issue setting log level. Make sure log level is a string: debug, warn, info, error, panic")
+	}
+	log.SetLevel(level)
 }
