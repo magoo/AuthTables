@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 	log "github.com/Sirupsen/logrus"
+	"regexp"
 )
 
 
@@ -112,6 +113,25 @@ func add(rec Record) (b bool) {
 	return true
 }
 
+func isStringSane(s string)(b bool) {
+
+	matched, err := regexp.MatchString("^[A-Za-z0-9.]{0,60}$", s)
+	if (err != nil) {
+		fmt.Println(err)
+	}
+
+	return matched
+}
+
+func isRecordSane(r Record)(b bool){
+
+	return (isStringSane(r.MID) && isStringSane(r.IP) && isStringSane(r.UID))
+
+}
+func sanitizeError(){
+	fmt.Println("Bad data received. Sanitize fields in application before sending to remove this message.")
+}
+
 func requestToJson (r *http.Request) (m Record) {
 	//Get our body from the request (which should be JSON)
 	r.ParseForm()
@@ -139,20 +159,37 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
 	m = requestToJson(r)
 
-	if (add(m)) {
-		fmt.Fprintln(w, "ADD")
-	} else {
+	if (isRecordSane(m)){
+		fmt.Println("Adding: ", m)
+
+		if (add(m)) {
 			fmt.Fprintln(w, "ADD")
-	}//Currently we fail open.
+		} else {
+			fmt.Fprintln(w, "ADD")
+		}//Currently we fail open.
+	} else {
+		sanitizeError()
+	}
+
 }
 
 func checkRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
 	m = requestToJson(r)
 
-	if (check(m)) {
-		fmt.Fprintln(w, "OK")
+	//Only let sane data through the gate.
+	if (isRecordSane(m)) {
+		fmt.Printf("Checking %s: ", m.UID)
+
+		if (check(m)) {
+			fmt.Fprintln(w, "OK")
+		} else {
+			fmt.Fprintln(w, "BAD")
+		}
 	} else {
+		//We hit this if nasty JSON data came through. Shouldn't touch bloom or redis.
+		//To remove this message, don't let your application send UID, IP, or MID that doesn't match "^[A-Za-z0-9.]{0,60}$"
+		sanitizeError()
 		fmt.Fprintln(w, "BAD")
 	}
 }
