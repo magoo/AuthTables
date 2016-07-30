@@ -1,5 +1,5 @@
 # AuthTables
-[![Build Status](https://travis-ci.com/magoo/AuthTables.svg?token=fpqWnUyRzpaumK7xop3q&branch=master)](https://travis-ci.com/magoo/AuthTables)
+[![Build Status](https://travis-ci.org/magoo/AuthTables.svg?branch=master)](https://travis-ci.com/magoo/AuthTables)
 
 AuthTables is a service that detects the possibility of "Account Take Over" (ATO) caused by remote credential theft and reuse. If bad actors are stealing your users passwords, AuthTables may be useful.
 
