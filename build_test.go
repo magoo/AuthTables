@@ -8,12 +8,6 @@ import "log"
 import "io/ioutil"
 import "github.com/willf/bloom"
 
-var testRec = Record{
-	UID: "testUID",
-	MID: "testMID",
-	IP:  "1.1.1.1",
-}
-
 func TestPrintLine(t *testing.T) {
 	// test stuff here...
 	fmt.Println("Print line works, so there's that.")
@@ -57,30 +51,4 @@ func TestBloom(t *testing.T) {
 		log.Fatal("Bloom filter could not detect a string that was in filter")
 	}
 
-}
-
-func BenchmarkBloomAdd(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
-		filter.Add([]byte("exists"))
-	}
-}
-
-func BenchmarkBloomTest(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
-		filter.Test([]byte("shouldnotexist"))
-	}
-}
-
-func BenchmarkWriteRecord(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		add(testRec)
-	}
-}
-
-func BenchmarkReadRecord(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		check(testRec)
-	}
 }
