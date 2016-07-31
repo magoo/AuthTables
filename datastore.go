@@ -19,7 +19,7 @@ type Record struct {
 
 //RecordHashes is a struct ready for use in the bloom filter or redis.
 type RecordHashes struct {
-	uid     []byte
+	uid    []byte
 	uidMID []byte
 	uidIP  []byte
 	uidALL []byte
