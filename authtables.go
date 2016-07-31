@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/redis.v4"
 	"io/ioutil"
 	"net/http"
-	"time"
-	log "github.com/Sirupsen/logrus"
 	"regexp"
+	"time"
 )
 
 //Main
@@ -16,8 +16,6 @@ func main() {
 
 	//First time online, load historical data for bloom
 	loadRecords()
-
-	//Configure log Loglevel
 
 	//Announce that we're running
 	log.Info("AuthTables is running.")
@@ -32,17 +30,17 @@ func getRecordHashesFromRecord(rec Record) (recordhashes RecordHashes) {
 
 	rh := RecordHashes{
 		uid:     []byte(rec.UID),
-		uid_mid: []byte(fmt.Sprintf("%s:%s",rec.UID,rec.MID)),
-		uid_ip:  []byte(fmt.Sprintf("%s:%s",rec.UID,rec.IP)),
-		uid_all: []byte(fmt.Sprintf("%s:%s:%s",rec.UID,rec.IP,rec.MID)),
-		ip_mid:  []byte(fmt.Sprintf("%s:%s",rec.IP,rec.MID)),
-		mid_ip:  []byte(fmt.Sprintf("%s:%s",rec.MID,rec.IP)),
+		uid_mid: []byte(fmt.Sprintf("%s:%s", rec.UID, rec.MID)),
+		uid_ip:  []byte(fmt.Sprintf("%s:%s", rec.UID, rec.IP)),
+		uid_all: []byte(fmt.Sprintf("%s:%s:%s", rec.UID, rec.IP, rec.MID)),
+		ip_mid:  []byte(fmt.Sprintf("%s:%s", rec.IP, rec.MID)),
+		mid_ip:  []byte(fmt.Sprintf("%s:%s", rec.MID, rec.IP)),
 	}
 
 	return rh
 }
 
-func check(rec Record)(b bool) {
+func check(rec Record) (b bool) {
 	//We've received a request to /check and now
 	//we need to see if it's suspicious or not.
 
@@ -63,10 +61,10 @@ func check(rec Record)(b bool) {
 	if filter.Test(rh.uid_all) {
 		//We've seen everything about this user before. MachineID, IP, and user.
 		log.WithFields(log.Fields{
-		"UID": rec.UID,
-		"MID": rec.MID,
-		"IP": rec.IP,
-  	}).Debug("Known user information.")
+			"UID": rec.UID,
+			"MID": rec.MID,
+			"IP":  rec.IP,
+		}).Debug("Known user information.")
 
 		//Write Everything.
 		defer writeUserRecord(rh)
@@ -74,9 +72,9 @@ func check(rec Record)(b bool) {
 	} else if (filter.Test(rh.uid_mid)) || (filter.Test(rh.uid_ip)) {
 
 		log.WithFields(log.Fields{
-		"UID": rec.UID,
-		"MID": rec.MID,
-		"IP": rec.IP,
+			"UID": rec.UID,
+			"MID": rec.MID,
+			"IP":  rec.IP,
 		}).Debug("Authentication is partially within graph. Expanding graph.")
 		defer writeUserRecord(rh)
 		return true
@@ -84,9 +82,9 @@ func check(rec Record)(b bool) {
 	} else if !(filter.Test(rh.uid)) {
 
 		log.WithFields(log.Fields{
-		"UID": rec.UID,
-		"MID": rec.MID,
-		"IP": rec.IP,
+			"UID": rec.UID,
+			"MID": rec.MID,
+			"IP":  rec.IP,
 		}).Debug("New user. Creating graph")
 
 		defer writeUserRecord(rh)
@@ -95,9 +93,9 @@ func check(rec Record)(b bool) {
 	} else {
 
 		log.WithFields(log.Fields{
-		"UID": rec.UID,
-		"MID": rec.MID,
-		"IP": rec.IP,
+			"UID": rec.UID,
+			"MID": rec.MID,
+			"IP":  rec.IP,
 		}).Info("Suspicious authentication.")
 		return false
 	}
@@ -112,32 +110,32 @@ func add(rec Record) (b bool) {
 	return true
 }
 
-func isStringSane(s string)(b bool) {
+func isStringSane(s string) (b bool) {
 
 	matched, err := regexp.MatchString("^[A-Za-z0-9.]{0,60}$", s)
-	if (err != nil) {
+	if err != nil {
 		fmt.Println(err)
 	}
 
 	return matched
 }
 
-func isRecordSane(r Record)(b bool){
+func isRecordSane(r Record) (b bool) {
 
 	return (isStringSane(r.MID) && isStringSane(r.IP) && isStringSane(r.UID))
 
 }
-func sanitizeError(){
+func sanitizeError() {
 	log.Warn("Bad data received. Sanitize fields in application before sending to remove this message.")
 }
 
-func requestToJson (r *http.Request) (m Record) {
+func requestToJson(r *http.Request) (m Record) {
 	//Get our body from the request (which should be JSON)
 	r.ParseForm()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("error:", err)
-		log.Warn("Trouble reading JSON from request",)
+		log.Warn("Trouble reading JSON from request")
 	}
 
 	//Cast our JSON body content to prepare for Unmarshal
@@ -147,7 +145,7 @@ func requestToJson (r *http.Request) (m Record) {
 	var rec Record
 	err = json.Unmarshal(client_authdata, &rec)
 	if err != nil {
-		log.Warn("Trouble with Unmarhal of JSON received from client.",)
+		log.Warn("Trouble with Unmarhal of JSON received from client.")
 	}
 
 	return rec
@@ -158,18 +156,18 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
 	m = requestToJson(r)
 
-	if (isRecordSane(m)){
+	if isRecordSane(m) {
 		log.WithFields(log.Fields{
-		"UID": m.UID,
-		"MID": m.MID,
-		"IP": m.IP,
+			"UID": m.UID,
+			"MID": m.MID,
+			"IP":  m.IP,
 		}).Debug("Adding user.")
 
-		if (add(m)) {
+		if add(m) {
 			fmt.Fprintln(w, "ADD")
 		} else {
 			fmt.Fprintln(w, "ADD")
-		}//Currently we fail open.
+		} //Currently we fail open.
 	} else {
 		sanitizeError()
 	}
@@ -181,9 +179,9 @@ func checkRequest(w http.ResponseWriter, r *http.Request) {
 	m = requestToJson(r)
 
 	//Only let sane data through the gate.
-	if (isRecordSane(m)) {
+	if isRecordSane(m) {
 
-		if (check(m)) {
+		if check(m) {
 			fmt.Fprintln(w, "OK")
 		} else {
 			fmt.Fprintln(w, "BAD")
@@ -204,8 +202,8 @@ func writeRecord(key []byte) {
 		rebuildConnection()
 
 		log.WithFields(log.Fields{
-		"error": err,
-  	}).Error("Problem connecting to database.")
+			"error": err,
+		}).Error("Problem connecting to database.")
 
 	}
 
@@ -244,8 +242,8 @@ func loadRecords() {
 			break
 		}
 	}
-  log.WithFields(log.Fields{
-  	"number": n,
+	log.WithFields(log.Fields{
+		"number": n,
 	}).Debug("Loaded historical records.")
 }
 
@@ -268,15 +266,14 @@ func writeUserRecord(rh RecordHashes) {
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.WithFields(log.Fields{
-		"time": elapsed.String(),
+		"time":  elapsed.String(),
 		"event": name,
 	}).Debug("Time tracked")
 }
 
-
 //Only using init to configure logging. See configuration.go
 func init() {
-	level, err:= log.ParseLevel(c.Loglevel)
+	level, err := log.ParseLevel(c.Loglevel)
 	if err != nil {
 		log.Error("Issue setting log level. Make sure log level is a string: debug, warn, info, error, panic")
 	}
