@@ -9,20 +9,22 @@ import (
 var n uint = 1000
 var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
 
+//Record is the main struct that is passed from applications to AuthTables as JSON.
+//Applications send us these, and AuthTables responds with `OK`s or `BAD`
 type Record struct {
 	UID string `json:"uid"`
 	IP  string `json:"ip"`
 	MID string `json:"mid"`
 }
 
-//Main data structure for Bloom and Redis.
+//RecordHashes is a struct ready for use in the bloom filter or redis.
 type RecordHashes struct {
 	uid     []byte
-	uid_mid []byte
-	uid_ip  []byte
-	uid_all []byte
-	ip_mid  []byte
-	mid_ip  []byte
+	uidMID []byte
+	uidIP  []byte
+	uidALL []byte
+	ipMID  []byte
+	midIP  []byte
 }
 
 //Take us online to Redis

@@ -24,7 +24,7 @@ func main() {
 	//Add routes, then open a webserver
 	http.HandleFunc("/add", addRequest)
 	http.HandleFunc("/check", checkRequest)
-	http.ListenAndServe(":8080", nil)
+	log.Error(http.ListenAndServe(":8080", nil))
 
 }
 
@@ -32,11 +32,11 @@ func getRecordHashesFromRecord(rec Record) (recordhashes RecordHashes) {
 
 	rh := RecordHashes{
 		uid:     []byte(rec.UID),
-		uid_mid: []byte(fmt.Sprintf("%s:%s",rec.UID,rec.MID)),
-		uid_ip:  []byte(fmt.Sprintf("%s:%s",rec.UID,rec.IP)),
-		uid_all: []byte(fmt.Sprintf("%s:%s:%s",rec.UID,rec.IP,rec.MID)),
-		ip_mid:  []byte(fmt.Sprintf("%s:%s",rec.IP,rec.MID)),
-		mid_ip:  []byte(fmt.Sprintf("%s:%s",rec.MID,rec.IP)),
+		uidMID: []byte(fmt.Sprintf("%s:%s",rec.UID,rec.MID)),
+		uidIP:  []byte(fmt.Sprintf("%s:%s",rec.UID,rec.IP)),
+		uidALL: []byte(fmt.Sprintf("%s:%s:%s",rec.UID,rec.IP,rec.MID)),
+		ipMID:  []byte(fmt.Sprintf("%s:%s",rec.IP,rec.MID)),
+		midIP:  []byte(fmt.Sprintf("%s:%s",rec.MID,rec.IP)),
 	}
 
 	return rh
@@ -51,16 +51,16 @@ func check(rec Record)(b bool) {
 
 	//These is ip:mid and mid:ip, useful for `key`
 	//commands hunting for other bad guys. This May
-	//be a seperate db, sharded elsewhere in the future.
+	//be a separate db, sharded elsewhere in the future.
 	//Example: `key 1.1.1.1:*` will reveal new machine ID's
 	//seen on this host.
 	//This may include evil data, which is why we don't attach to a user.
-	writeRecord(rh.ip_mid)
-	writeRecord(rh.mid_ip)
+	writeRecord(rh.ipMID)
+	writeRecord(rh.midIP)
 
 	//Do we have it in bloom?
 	//if filter.Test([]byte(r.URL.Path[1:])) {
-	if filter.Test(rh.uid_all) {
+	if filter.Test(rh.uidALL) {
 		//We've seen everything about this user before. MachineID, IP, and user.
 		log.WithFields(log.Fields{
 		"UID": rec.UID,
@@ -71,7 +71,7 @@ func check(rec Record)(b bool) {
 		//Write Everything.
 		defer writeUserRecord(rh)
 		return true
-	} else if (filter.Test(rh.uid_mid)) || (filter.Test(rh.uid_ip)) {
+	} else if (filter.Test(rh.uidMID)) || (filter.Test(rh.uidIP)) {
 
 		log.WithFields(log.Fields{
 		"UID": rec.UID,
@@ -131,21 +131,26 @@ func sanitizeError(){
 	log.Warn("Bad data received. Sanitize fields in application before sending to remove this message.")
 }
 
-func requestToJson (r *http.Request) (m Record) {
+func requestToJSON (r *http.Request) (m Record) {
 	//Get our body from the request (which should be JSON)
-	r.ParseForm()
+	err:= r.ParseForm()
+	if err != nil {
+		fmt.Println("error:", err)
+		log.Warn("Trouble parsing the form from the request")
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println("error:", err)
-		log.Warn("Trouble reading JSON from request",)
+		log.Warn("Trouble reading JSON from request")
 	}
 
 	//Cast our JSON body content to prepare for Unmarshal
-	client_authdata := []byte(body)
+	clientAuthdata := []byte(body)
 
 	//Decode some JSON and get it into our Record struct
 	var rec Record
-	err = json.Unmarshal(client_authdata, &rec)
+	err = json.Unmarshal(clientAuthdata, &rec)
 	if err != nil {
 		log.Warn("Trouble with Unmarhal of JSON received from client.",)
 	}
@@ -156,7 +161,7 @@ func requestToJson (r *http.Request) (m Record) {
 //Main routing handlers
 func addRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
-	m = requestToJson(r)
+	m = requestToJSON(r)
 
 	if (isRecordSane(m)){
 		log.WithFields(log.Fields{
@@ -178,7 +183,7 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 
 func checkRequest(w http.ResponseWriter, r *http.Request) {
 	var m Record
-	m = requestToJson(r)
+	m = requestToJSON(r)
 
 	//Only let sane data through the gate.
 	if (isRecordSane(m)) {
@@ -251,7 +256,7 @@ func loadRecords() {
 
 func writeUserRecord(rh RecordHashes) {
 
-	err := client.MSetNX(string(rh.uid), 1, string(rh.uid_mid), 1, string(rh.uid_ip), 1, string(rh.uid_ip), 1, string(rh.uid_all), 1).Err()
+	err := client.MSetNX(string(rh.uid), 1, string(rh.uidMID), 1, string(rh.uidIP), 1, string(rh.uidIP), 1, string(rh.uidALL), 1).Err()
 	if err != nil {
 		//(TODO Try to make new connection)
 		fmt.Println("MSetNX failed")
@@ -259,10 +264,10 @@ func writeUserRecord(rh RecordHashes) {
 	}
 
 	//Bloom
-	filter.Add(rh.uid_mid)
-	filter.Add(rh.uid_ip)
+	filter.Add(rh.uidMID)
+	filter.Add(rh.uidIP)
 	filter.Add(rh.uid)
-	filter.Add(rh.uid_all)
+	filter.Add(rh.uidALL)
 }
 
 func timeTrack(start time.Time, name string) {
