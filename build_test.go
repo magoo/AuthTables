@@ -7,6 +7,7 @@ import "net/http/httptest"
 import "log"
 import "io/ioutil"
 import "github.com/willf/bloom"
+import "bytes"
 
 var testRec = Record{
 	UID: "testUID",
@@ -58,6 +59,68 @@ func TestBloom(t *testing.T) {
 		log.Fatal("Bloom filter could not detect a string that was in filter")
 	}
 
+}
+
+func TestCheckRequest(t *testing.T) {
+
+	var jsonStr = []byte(`{
+	"uid": "magoo",
+	"ip": "1.1.1.1",
+	"mid": "ASDFQWERASDF"
+}`)
+
+	req, err := http.NewRequest("POST", "/check", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(checkRequest)
+
+	handler.ServeHTTP(rr, req)
+
+	// Correct Response?
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	// Check the response body is what we expect.
+	expected := `OK`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestAddRequest(t *testing.T) {
+
+	var jsonStr = []byte(`{
+	"uid": "magooadd",
+	"ip": "1.1.1.1",
+	"mid": "ASDFQWERASDF"
+}`)
+
+	req, err := http.NewRequest("POST", "/add", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(addRequest)
+
+	handler.ServeHTTP(rr, req)
+
+	// Correct Response?
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	// Check the response body is what we expect.
+	expected := `ADD`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
 }
 
 func BenchmarkBloomAdd(b *testing.B) {
