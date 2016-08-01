@@ -7,6 +7,15 @@ import "net/http/httptest"
 import "log"
 import "io/ioutil"
 import "github.com/willf/bloom"
+import "bytes"
+
+var testRec = Record{
+	UID: "testUID",
+	MID: "testMID",
+	IP:  "1.1.1.1",
+}
+
+var filterTest = bloom.New(1000000*n, 5)
 
 func TestPrintLine(t *testing.T) {
 	// test stuff here...
@@ -42,13 +51,101 @@ func TestWWWServer(t *testing.T) {
 }
 
 func TestBloom(t *testing.T) {
-	var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
-	if filter.Test([]byte("shouldnotexist")) {
+	if filterTest.Test([]byte("shouldnotexist")) {
 		log.Fatal("Bloom filter detected a string that wasn't in filter")
 	}
-	filter.Add([]byte("exists"))
-	if !filter.Test([]byte("exists")) {
+	filterTest.Add([]byte("exists"))
+	if !filterTest.Test([]byte("exists")) {
 		log.Fatal("Bloom filter could not detect a string that was in filter")
 	}
 
+}
+
+func TestCheckRequest(t *testing.T) {
+
+	var jsonStr = []byte(`{
+	"uid": "magoo",
+	"ip": "1.1.1.1",
+	"mid": "ASDFQWERASDF"
+}`)
+
+	req, err := http.NewRequest("POST", "/check", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(checkRequest)
+
+	handler.ServeHTTP(rr, req)
+
+	// Correct Response?
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	// Check the response body is what we expect.
+	expected := `OK`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestAddRequest(t *testing.T) {
+
+	var jsonStr = []byte(`{
+	"uid": "magooadd",
+	"ip": "1.1.1.1",
+	"mid": "ASDFQWERASDF"
+}`)
+
+	req, err := http.NewRequest("POST", "/add", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(addRequest)
+
+	handler.ServeHTTP(rr, req)
+
+	// Correct Response?
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	// Check the response body is what we expect.
+	expected := `ADD`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func BenchmarkBloomAdd(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		// We reset the timer because the bloom filter is only created on boot.
+		//b.ResetTimer()
+		filterTest.Add([]byte("exists"))
+	}
+}
+
+func BenchmarkBloomTest(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		// We reset the timer because the bloom filter is only created on boot.
+		filter.Test([]byte("shouldnotexist"))
+	}
+}
+
+func BenchmarkWriteRecord(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		add(testRec)
+	}
+}
+
+func BenchmarkReadRecord(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		check(testRec)
+	}
 }
