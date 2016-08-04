@@ -35,6 +35,16 @@ function add {
   fi
 }
 
+function reset {
+  RESULT=$(curl localhost:8080/reset \
+   -s)
+
+  if [ "$RESULT" != "$1" ]; then
+    echo "Failed."
+    exit 1
+  fi
+}
+
 #Brand new user. Begin their graph.
 check "1.1.1.1" "COOKIEONE" "OK"
 #Login with new computers in the same house
@@ -58,6 +68,12 @@ check "2.2.2.2" "'<&2$;:" "BAD"
 add "4.4.4.4" "BADCOOKIE" "ADD"
 
 #Not so suspicious now, is it?
+check "4.4.4.4" "BADCOOKIE" "OK"
+
+#Try resetting the database
+reset "RESET"
+
+#Database reset and our data is here, persistance successful.
 check "4.4.4.4" "BADCOOKIE" "OK"
 
 echo "All tests have passed."
