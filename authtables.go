@@ -24,6 +24,7 @@ func main() {
 	//Add routes, then open a webserver
 	http.HandleFunc("/add", addRequest)
 	http.HandleFunc("/check", checkRequest)
+	http.HandleFunc("/reset", resetRequest)
 	log.Error(http.ListenAndServe(":8080", nil))
 
 }
@@ -69,7 +70,7 @@ func check(rec Record) (b bool) {
 		}).Debug("Known user information.")
 
 		//Write Everything.
-		defer writeUserRecord(rh)
+		//defer writeUserRecord(rh)
 		return true
 	} else if (filter.Test(rh.uidMID)) || (filter.Test(rh.uidIP)) {
 
@@ -102,14 +103,6 @@ func check(rec Record) (b bool) {
 		return false
 	}
 
-}
-
-func add(rec Record) (b bool) {
-
-	//JSON record is sent to /add, we add all of it to bloom.
-	rh := getRecordHashesFromRecord(rec)
-	writeUserRecord(rh)
-	return true
 }
 
 func isStringSane(s string) (b bool) {
@@ -174,11 +167,25 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintln(w, "ADD")
 		} else {
 			fmt.Fprintln(w, "ADD")
+			log.Error("Something went wrong adding user.")
 		} //Currently we fail open.
 	} else {
 		sanitizeError()
 	}
 
+}
+
+func add(rec Record) (b bool) {
+
+	//JSON record is sent to /add, we add all of it to bloom.
+	rh := getRecordHashesFromRecord(rec)
+	defer writeUserRecord(rh)
+	return true
+}
+
+func resetRequest(w http.ResponseWriter, r *http.Request) {
+	loadRecords()
+	fmt.Fprintln(w, "RESET")
 }
 
 func checkRequest(w http.ResponseWriter, r *http.Request) {
@@ -230,12 +237,14 @@ func loadRecords() {
 
 	var cursor uint64
 	var n int
+
+	//Empty our filter before re-filling
+	filter.ClearAll()
 	for {
 		var keys []string
 		var err error
 		keys, cursor, err = client.Scan(cursor, "", 10).Result()
 		if err != nil {
-
 			log.Error("Could not connect to database. Continuing without records")
 			break
 		}
@@ -256,11 +265,10 @@ func loadRecords() {
 
 func writeUserRecord(rh RecordHashes) {
 
-	err := client.MSetNX(string(rh.uid), 1, string(rh.uidMID), 1, string(rh.uidIP), 1, string(rh.uidIP), 1, string(rh.uidALL), 1).Err()
+	err := client.MSet(string(rh.uid), 1, string(rh.uidMID), 1, string(rh.uidIP), 1, string(rh.uidALL), 1).Err()
 	if err != nil {
-		//(TODO Try to make new connection)
-		fmt.Println("MSetNX failed")
-		fmt.Println(err)
+		log.Error("MSet failed.")
+		log.Error(err)
 	}
 
 	//Bloom
