@@ -164,9 +164,9 @@ func addRequest(w http.ResponseWriter, r *http.Request) {
 		}).Debug("Adding user.")
 
 		if add(m) {
-			fmt.Fprintln(w, "ADD")
+			fmt.Fprint(w, "ADD")
 		} else {
-			fmt.Fprintln(w, "ADD")
+			fmt.Fprint(w, "ADD")
 			log.Error("Something went wrong adding user.")
 		} //Currently we fail open.
 	} else {
@@ -196,9 +196,9 @@ func checkRequest(w http.ResponseWriter, r *http.Request) {
 	if isRecordSane(m) {
 
 		if check(m) {
-			fmt.Fprintln(w, "OK")
+			fmt.Fprint(w, "OK")
 		} else {
-			fmt.Fprintln(w, "BAD")
+			fmt.Fprint(w, "BAD")
 		}
 	} else {
 		//We hit this if nasty JSON data came through. Shouldn't touch bloom or redis.
