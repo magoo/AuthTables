@@ -35,14 +35,16 @@ function add {
   fi
 }
 
-function rst {
-  RESULT=$(curl localhost:8080/reset -s)
-
-  if [ "$RESULT" != "$1" ]; then
-    echo "Failed. Received: $RESULT Expected: $1."
-    exit 1
-  fi
-}
+#function rst {
+#  RESULT=$(curl localhost:8080/reset -s \
+#  -H "Content-Type: application/json" \
+#  )
+#
+#  if [ "$RESULT" != "$1" ]; then
+#    echo "Failed. Received: $RESULT Expected: $1."
+#    exit 1
+#  fi
+#}
 
 echo Brand new user. Begin their graph.
 check "1.1.1.1" "COOKIEONE" "OK"
@@ -71,7 +73,7 @@ echo Not so suspicious now, is it?
 check "4.4.4.4" "BADCOOKIE" "OK"
 
 echo Try resetting the database
-rst "RESET"
+#rst "RESET"
 
 echo Database reset and our data is here, persistance successful.
 check "4.4.4.4" "BADCOOKIE" "OK"
