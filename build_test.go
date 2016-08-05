@@ -95,9 +95,9 @@ func TestCheckRequest(t *testing.T) {
 func TestAddRequest(t *testing.T) {
 
 	var jsonStr = []byte(`{
-	"uid": "magooadd",
+	"uid": "USERIDTEST",
 	"ip": "1.1.1.1",
-	"mid": "ASDFQWERASDF"
+	"mid": "MACHINEIDTEST"
 }`)
 
 	req, err := http.NewRequest("POST", "/add", bytes.NewBuffer(jsonStr))
@@ -121,6 +121,11 @@ func TestAddRequest(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
+	// Check a key was written
+	if !(canGetKey("USERIDTEST:1.1.1.1") && canGetKey("USERIDTEST:MACHINEIDTEST")) {
+		t.Errorf("keys not being written")
+	}
+
 }
 
 func BenchmarkBloomAdd(b *testing.B) {

@@ -263,6 +263,14 @@ func loadRecords() {
 	}).Debug("Loaded historical records.")
 }
 
+func canGetKey(s string) bool {
+	err := client.Get(s).Err()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func writeUserRecord(rh RecordHashes) {
 
 	err := client.MSet(string(rh.uid), 1, string(rh.uidMID), 1, string(rh.uidIP), 1, string(rh.uidALL), 1).Err()
