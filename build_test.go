@@ -1,18 +1,21 @@
 package main
 
-import "testing"
-import "fmt"
-import "net/http"
-import "net/http/httptest"
-import "log"
-import "io/ioutil"
-import "github.com/willf/bloom"
-import "bytes"
+import (
+				"testing"
+ 				"fmt"
+ 				"net/http"
+ 				"net/http/httptest"
+ 				"log"
+ 				"io/ioutil"
+ 				"github.com/willf/bloom"
+ 				"bytes"
+ 				"encoding/json"
+			)
 
 var testRec = Record{
-	UID: "testUID",
-	MID: "testMID",
-	IP:  "1.1.1.1",
+	Uid: "testUID",
+	Mid: "testMID",
+	Ip:  "1.1.1.1",
 }
 
 var filterTest = bloom.New(1000000*n, 5)
@@ -62,14 +65,7 @@ func TestBloom(t *testing.T) {
 }
 
 func TestCheckRequest(t *testing.T) {
-
-	var jsonStr = []byte(`{
-	"uid": "magoo",
-	"ip": "1.1.1.1",
-	"mid": "ASDFQWERASDF"
-}`)
-
-	req, err := http.NewRequest("POST", "/check", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", "/check", bytes.NewBuffer(testRec.Marshaler()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,11 +90,10 @@ func TestCheckRequest(t *testing.T) {
 
 func TestAddRequest(t *testing.T) {
 
-	var jsonStr = []byte(`{
-	"uid": "USERIDTEST",
-	"ip": "1.1.1.1",
-	"mid": "MACHINEIDTEST"
-}`)
+	jsonStr, err := json.Marshal(testRec)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	req, err := http.NewRequest("POST", "/add", bytes.NewBuffer(jsonStr))
 	if err != nil {
@@ -122,7 +117,7 @@ func TestAddRequest(t *testing.T) {
 			rr.Body.String(), expected)
 	}
 	// Check a key was written
-	if !(canGetKey("USERIDTEST:1.1.1.1") && canGetKey("USERIDTEST:MACHINEIDTEST")) {
+	if !(canGetKey("testUID:1.1.1.1") && canGetKey("testUID:testMID")) {
 		t.Errorf("keys not being written")
 	}
 
