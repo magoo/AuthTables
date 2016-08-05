@@ -6,7 +6,7 @@ services:
   - redis-server
 script:
   - go test - v ./..
-  - go build
+  - go install
   - authtables
   - ./scripts/test
 after_success:
