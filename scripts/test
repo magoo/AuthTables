@@ -3,6 +3,14 @@
 RAND=$RANDOM
 
 $(nc -zv 127.0.0.1 8080)
+$(curl localhost:8080/check \
+ -s \
+ -H "Content-Type: application/json" \
+ -XPOST -d \
+ "{ \"ip\":\"1.1.1.1\",
+    \"mid\":\"12345\",
+    \"uid\":\"userid1234\"
+  }")
 
 function check {
   RESULT=$(curl localhost:8080/check \
