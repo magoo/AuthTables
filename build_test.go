@@ -20,6 +20,14 @@ var testRec = Record{
 
 var filterTest = bloom.New(1000000*n, 5)
 
+func TestRedisConnectivity (t *testing.T) {
+
+	_, err := client.Ping().Result()
+	if err != nil {
+		t.Errorf("We can't ping redis.")
+	}
+}
+
 func TestPrintLine(t *testing.T) {
 	// test stuff here...
 	fmt.Println("Print line works, so there's that.")
