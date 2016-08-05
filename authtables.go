@@ -24,7 +24,7 @@ func main() {
 	//Add routes, then open a webserver
 	http.HandleFunc("/add", addRequest)
 	http.HandleFunc("/check", checkRequest)
-	//http.HandleFunc("/reset", resetRequest)
+	http.HandleFunc("/reset", resetRequest)
 	log.Error(http.ListenAndServe(":8080", nil))
 
 }
@@ -184,8 +184,8 @@ func add(rec Record) (b bool) {
 }
 
 func resetRequest(w http.ResponseWriter, r *http.Request) {
-	loadRecords()
 	fmt.Fprint(w, "RESET")
+	defer loadRecords()
 }
 
 func checkRequest(w http.ResponseWriter, r *http.Request) {
