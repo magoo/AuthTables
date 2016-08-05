@@ -185,7 +185,7 @@ func add(rec Record) (b bool) {
 
 func resetRequest(w http.ResponseWriter, r *http.Request) {
 	loadRecords()
-	fmt.Fprintln(w, "RESET")
+	fmt.Fprint(w, "RESET")
 }
 
 func checkRequest(w http.ResponseWriter, r *http.Request) {
