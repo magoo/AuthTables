@@ -5,6 +5,8 @@ services:
   - docker
   - redis-server
 script:
+  - go test - v ./..
+  - go build authtables.go configuration.go datastore.go
   - ./scripts/test
 after_success:
   - docker-compose build
