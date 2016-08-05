@@ -36,8 +36,7 @@ function add {
 }
 
 function rst {
-  RESULT=$(curl localhost:8080/reset \
-   -s)
+  RESULT=$(curl localhost:8080/reset -s)
 
   if [ "$RESULT" != "$1" ]; then
     echo "Failed. Received: $RESULT Expected: $1."
