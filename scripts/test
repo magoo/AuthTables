@@ -13,7 +13,7 @@ function check {
     }")
 
   if [ "$RESULT" != "$3" ]; then
-    echo "Failed. Expected: $RESULT received $3."
+    echo "Failed. Received: $RESULT Expected: $3."
     exit 1
   fi
 
@@ -30,17 +30,17 @@ function add {
     }")
 
   if [ "$RESULT" != "$3" ]; then
-    echo "Failed. Expected: $RESULT received $3."
+    echo "Failed. Received: $RESULT Expected: $3."
     exit 1
   fi
 }
 
-function reset {
+function rst {
   RESULT=$(curl localhost:8080/reset \
    -s)
 
   if [ "$RESULT" != "$1" ]; then
-    echo "Failed. Expected: $RESULT received $1."
+    echo "Failed. Received: $RESULT Expected: $1."
     exit 1
   fi
 }
@@ -72,7 +72,7 @@ echo Not so suspicious now, is it?
 check "4.4.4.4" "BADCOOKIE" "OK"
 
 echo Try resetting the database
-reset "RESET"
+rst "RESET"
 
 echo Database reset and our data is here, persistance successful.
 check "4.4.4.4" "BADCOOKIE" "OK"
