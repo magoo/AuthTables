@@ -2,7 +2,7 @@
 
 RAND=$RANDOM
 
-$(nc -zv 127.0.0.1 8080)
+$(nc -zv localhost 8080)
 $(curl localhost:8080/check \
  -s \
  -H "Content-Type: application/json" \

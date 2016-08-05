@@ -24,7 +24,7 @@ func main() {
 	//Add routes, then open a webserver
 	http.HandleFunc("/add", addRequest)
 	http.HandleFunc("/check", checkRequest)
-	http.HandleFunc("/reset", resetRequest)
+	//http.HandleFunc("/reset", resetRequest)
 	log.Error(http.ListenAndServe(":8080", nil))
 
 }
