@@ -273,7 +273,7 @@ func canGetKey(s string) bool {
 
 func writeUserRecord(rh RecordHashes) {
 
-	err := client.MSet(string(rh.uid), 1, string(rh.uidMID), 1, string(rh.uidIP), 1, string(rh.uidALL), 1).Err()
+	err := client.MSetNX(string(rh.uid), 1, string(rh.uidMID), 1, string(rh.uidIP), 1, string(rh.uidALL), 1).Err()
 	if err != nil {
 		log.Error("MSet failed.")
 		log.Error(err)
