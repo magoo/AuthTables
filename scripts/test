@@ -13,7 +13,7 @@ function check {
     }")
 
   if [ "$RESULT" != "$3" ]; then
-    echo "Failed. Expected: $RESULT received $1."
+    echo "Failed. Expected: $RESULT received $3."
     exit 1
   fi
 
@@ -30,7 +30,7 @@ function add {
     }")
 
   if [ "$RESULT" != "$3" ]; then
-    echo "Failed. Expected: $RESULT received $1."
+    echo "Failed. Expected: $RESULT received $3."
     exit 1
   fi
 }
