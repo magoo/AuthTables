@@ -4,11 +4,6 @@ go:
 services:
   - docker
   - redis-server
-script:
-  - go test - v ./..
-  - go install
-  - authtables
-  - ./scripts/test
 after_success:
   - docker-compose build
   - docker-compose up -d
