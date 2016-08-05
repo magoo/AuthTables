@@ -2,6 +2,8 @@
 
 RAND=$RANDOM
 
+$(nc -zv 127.0.0.1 8080)
+
 function check {
   RESULT=$(curl localhost:8080/check \
    -s \
