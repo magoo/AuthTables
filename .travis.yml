@@ -3,6 +3,7 @@ go:
   - tip
 services:
   - docker
+  - redis-server
 after_success:
   - docker-compose build
   - docker-compose up -d
