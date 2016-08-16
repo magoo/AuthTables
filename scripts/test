@@ -13,7 +13,7 @@ function check {
     }")
 
   if [ "$RESULT" != "$3" ]; then
-    echo "Failed."
+    echo "Failed. Received: $RESULT Expected: $3."
     exit 1
   fi
 
@@ -30,50 +30,52 @@ function add {
     }")
 
   if [ "$RESULT" != "$3" ]; then
-    echo "Failed."
+    echo "Failed. Received: $RESULT Expected: $3."
     exit 1
   fi
 }
 
-function reset {
-  RESULT=$(curl localhost:8080/reset \
-   -s)
+#function rst {
+#  RESULT=$(curl localhost:8080/reset -s \
+#  -H "Content-Type: application/json" \
+#  )
+#
+#  if [ "$RESULT" != "$1" ]; then
+#    echo "Failed. Received: $RESULT Expected: $1."
+#    exit 1
+#  fi
+#}
 
-  if [ "$RESULT" != "$1" ]; then
-    echo "Failed."
-    exit 1
-  fi
-}
-
-#Brand new user. Begin their graph.
+echo Brand new user. Begin their graph.
 check "1.1.1.1" "COOKIEONE" "OK"
-#Login with new computers in the same house
+
+echo Login with new computers in the same house
 check "1.1.1.1" "COOKIETWO" "OK"
 check "1.1.1.1" "COOKIETHREE" "OK"
 check "1.1.1.1" "COOKIEFOUR" "OK"
 
 add "5.5.5.5" "NEWCOOKIE" "ADD"
 
-#Login from work with laptop
+echo Login from work with laptop
 check "2.2.2.2" "COOKIETWO" "OK"
 
-#Suspicious Login!
+echo Suspicious Login!
 check "4.4.4.4" "BADCOOKIE" "BAD"
 
-#Bad Data!
+echo Bad Data!
 check "<script>alert(null)>" "BADCOOKIE" "BAD"
 check "2.2.2.2" "'<&2$;:" "BAD"
 
-#Add that previously suspicious login
+echo Add that previously suspicious login
 add "4.4.4.4" "BADCOOKIE" "ADD"
 
-#Not so suspicious now, is it?
+echo Not so suspicious now, is it?
 check "4.4.4.4" "BADCOOKIE" "OK"
 
-#Try resetting the database
-reset "RESET"
+echo Try resetting the database
+#rst "RESET"
 
-#Database reset and our data is here, persistance successful.
+echo Database reset and our data is here, persistance successful.
 check "4.4.4.4" "BADCOOKIE" "OK"
 
 echo "All tests have passed."

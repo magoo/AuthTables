@@ -3,6 +3,9 @@ package main
 import (
 	"github.com/willf/bloom"
 	"gopkg.in/redis.v4"
+	"encoding/json"
+	log "github.com/Sirupsen/logrus"
+	"fmt"
 )
 
 //Bloom Filter
@@ -12,9 +15,21 @@ var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
 //Record is the main struct that is passed from applications to AuthTables as JSON.
 //Applications send us these, and AuthTables responds with `OK`s or `BAD`
 type Record struct {
-	UID string `json:"uid"`
-	IP  string `json:"ip"`
-	MID string `json:"mid"`
+	Uid string `json:"uid"`
+	Ip  string `json:"ip"`
+	Mid string `json:"mid"`
+}
+
+func (r Record) Marshaler() []byte {
+
+	json, err := json.Marshal(r)
+	if err != nil {
+		log.Error("Issue marshal'ing json")
+	}
+	fmt.Println(string(json))
+
+	return json
+
 }
 
 //RecordHashes is a struct ready for use in the bloom filter or redis.

@@ -1,21 +1,32 @@
 package main
 
-import "testing"
-import "fmt"
-import "net/http"
-import "net/http/httptest"
-import "log"
-import "io/ioutil"
-import "github.com/willf/bloom"
-import "bytes"
+import (
+				"testing"
+ 				"fmt"
+ 				"net/http"
+ 				"net/http/httptest"
+ 				"log"
+ 				"io/ioutil"
+ 				"github.com/willf/bloom"
+ 				"bytes"
+ 				"encoding/json"
+			)
 
 var testRec = Record{
-	UID: "testUID",
-	MID: "testMID",
-	IP:  "1.1.1.1",
+	Uid: "testUID",
+	Mid: "testMID",
+	Ip:  "1.1.1.1",
 }
 
 var filterTest = bloom.New(1000000*n, 5)
+
+func TestRedisConnectivity (t *testing.T) {
+
+	_, err := client.Ping().Result()
+	if err != nil {
+		t.Errorf("We can't ping redis.")
+	}
+}
 
 func TestPrintLine(t *testing.T) {
 	// test stuff here...
@@ -62,14 +73,7 @@ func TestBloom(t *testing.T) {
 }
 
 func TestCheckRequest(t *testing.T) {
-
-	var jsonStr = []byte(`{
-	"uid": "magoo",
-	"ip": "1.1.1.1",
-	"mid": "ASDFQWERASDF"
-}`)
-
-	req, err := http.NewRequest("POST", "/check", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", "/check", bytes.NewBuffer(testRec.Marshaler()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,13 +96,36 @@ func TestCheckRequest(t *testing.T) {
 	}
 }
 
+func TestResetRequest(t *testing.T) {
+	req, err := http.NewRequest("POST", "/reset", bytes.NewBuffer(testRec.Marshaler()))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(resetRequest)
+
+	handler.ServeHTTP(rr, req)
+
+	// Correct Response?
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	// Check the response body is what we expect.
+	expected := `RESET`
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
 func TestAddRequest(t *testing.T) {
 
-	var jsonStr = []byte(`{
-	"uid": "magooadd",
-	"ip": "1.1.1.1",
-	"mid": "ASDFQWERASDF"
-}`)
+	jsonStr, err := json.Marshal(testRec)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	req, err := http.NewRequest("POST", "/add", bytes.NewBuffer(jsonStr))
 	if err != nil {
@@ -121,6 +148,11 @@ func TestAddRequest(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
+	// Check a key was written
+	if !(canGetKey("testUID:1.1.1.1") && canGetKey("testUID:testMID")) {
+		t.Errorf("keys not being written")
+	}
+
 }
 
 func BenchmarkBloomAdd(b *testing.B) {
