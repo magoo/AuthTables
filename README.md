@@ -13,7 +13,16 @@ Read more about this strategy [here](https://medium.com/starting-up-security/pre
 
 AuthTables relies on an in memory [bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) allowing extremely fast responses while storing historical user location records to redis for backups and fraud investigations.
 
-## Threat
+## Potential Implementations
+AuthTables only tells you if a login is completely unrecognized or not. It's up to you to build your application to do the following with `BAD` logins:
+
+- Hook up a Slack bot to notify employees that a totally new IP / Device logged into their account.
+- Force an IP that is frequently authenticating as `BAD` to solve CAPTCHA's.
+- Disable sensitive features until MFA, SMS, or email verification occurs, like a BTC withdraw.
+- Do a `count(IP)` across all of your suspicious logins and surface high volume bad actors for review.
+- Notify other open sessions if the new `BAD` session is ok.
+
+## The Threat
 
 AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical records, unless they are a localized account takeover threat (malware, etc)
 
@@ -94,10 +103,4 @@ curl localhost:8080/check \
 
 See more examples in `/scripts` for local testing.
 
-## Potential Implementations
-You could build your application to do the following with `BAD` logins:
-- Hook up a Slack bot to notify employees that a totally new IP / Device logged into their account.
-- Force an IP that is frequently authenticating as `BAD` to solve CAPTCHA's.
-- Disable sensitive features until MFA or email verification occurs, like a BTC withdraw.
-- Do a `count(IP)` across all of your suspicious logins and surface high volume bad actors
-- Ask other open sessions if the new `BAD` session is ok
+
