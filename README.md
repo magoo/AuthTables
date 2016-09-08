@@ -22,7 +22,7 @@ AuthTables only tells you if a login is completely unrecognized or not. It's up 
 - Do a `count(IP)` across all of your suspicious logins and surface high volume bad actors for review.
 - Notify other open sessions if the new `BAD` session is ok.
 
-While AuthTables will "Trust on First Use" (TOFU), it's up to your application to `/add` new authentication data to create a positive feedback loop.
+While AuthTables will "Trust on First Use" (TOFU), it's up to your applications to `/add` new authentication data to create a positive feedback loop. For instance, every MFA challenge that succeeds should `/add` the auth to AuthTables to improve signal. 
 
 ## The Threat
 
