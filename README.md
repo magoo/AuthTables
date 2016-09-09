@@ -24,6 +24,10 @@ AuthTables only tells you if a login is completely unrecognized or not. It's up 
 
 While AuthTables will "Trust on First Use" (TOFU), it's up to your applications to `/add` new authentication data to create a positive feedback loop. For instance, every MFA challenge that succeeds should `/add` the auth to AuthTables to improve signal. 
 
+Here's how AuthTables looks when it is logging authentications. 
+
+![](example.gif)
+
 ## The Threat
 
 AuthTables is solely focused on the most common credential theft and reuse vector. Specifically, this is when an attacker has a victim's username and password, but they are not on the victim's host or network. This specific threat _absolutely cannot operate_ within the known graph of users historical records, unless they are a localized account takeover threat (malware, etc)
