@@ -1,2 +1,6 @@
 
 *.swp
+
+scripts/test_data
+
+scripts/test_data.go

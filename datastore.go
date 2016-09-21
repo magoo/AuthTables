@@ -9,8 +9,7 @@ import (
 )
 
 //Bloom Filter
-var n uint = 1000
-var filter = bloom.New(1000000*n, 5) // load of 20, 5 keys
+var filter = bloom.NewWithEstimates(c.BloomSize, 1e-3) // Configurable in environment var. 
 
 //Record is the main struct that is passed from applications to AuthTables as JSON.
 //Applications send us these, and AuthTables responds with `OK`s or `BAD`
