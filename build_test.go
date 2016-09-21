@@ -18,7 +18,7 @@ var testRec = Record{
 	Ip:  "1.1.1.1",
 }
 
-var filter = bloom.NewWithEstimates(c.BloomSize, 1e-3) // Configurable in environment var.
+var filterTest = bloom.NewWithEstimates(c.BloomSize, 1e-3) // Configurable in environment var.
 
 func TestRedisConnectivity (t *testing.T) {
 
