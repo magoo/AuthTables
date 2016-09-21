@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
  	"strconv"
+	log "github.com/Sirupsen/logrus"
 )
 
 //Configuration holds data cleaned from our ENV variables or passed through cmd line
@@ -32,6 +33,11 @@ func readConfig() (c Configuration) {
 	d, _  := strconv.ParseUint(os.Getenv("AUTHTABLES_BLOOMSIZE"), 0, 32)
 	flag.UintVar(&flagBloomSize, "bloomsize", uint(d), "size of bloom filter (default 1e9)")
 	flag.Parse()
+
+	if (flagHost == "" || flagPort == "" || flagLoglevel == "" || flagBloomSize == 0) {
+		log.Error("Important things are not configured. You need to have your environment variables set, a .env file (docker), or pass valid data in command line arguments.")
+	}
+
 
 	//We're going to load this with config data. See struct!
 	configuration := Configuration{}
